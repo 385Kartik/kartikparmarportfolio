@@ -1,200 +1,144 @@
-import { motion, useScroll, useTransform } from 'framer-motion';
-import { useRef, useState } from 'react';
-import { ExternalLink, Github } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { useState } from 'react';
+import { ArrowUpRight } from 'lucide-react';
 
 const projects = [
   {
     id: 1,
-    title: 'Immersive 3D Experience',
-    description: 'A WebGL-powered immersive experience featuring real-time 3D graphics and particle systems.',
-    tags: ['Three.js', 'React', 'WebGL', 'GLSL'],
-    color: '#00d4ff',
-    image: '🌌',
+    title: 'NEXUS PLATFORM',
+    category: 'Web Development',
+    year: '2024',
+    image: '🌐',
   },
   {
     id: 2,
-    title: 'E-Commerce Platform',
-    description: 'Modern e-commerce solution with seamless animations and micro-interactions.',
-    tags: ['Next.js', 'TypeScript', 'Stripe', 'Tailwind'],
-    color: '#ff00ff',
-    image: '🛒',
+    title: 'QUANTUM APP',
+    category: 'Mobile Experience',
+    year: '2024',
+    image: '📱',
   },
   {
     id: 3,
-    title: 'Creative Agency Website',
-    description: 'Award-winning agency website with scroll-based animations and parallax effects.',
-    tags: ['GSAP', 'React', 'Framer Motion', 'Figma'],
-    color: '#a855f7',
-    image: '🎨',
+    title: 'NEURAL DASHBOARD',
+    category: 'AI Integration',
+    year: '2023',
+    image: '🧠',
   },
   {
     id: 4,
-    title: 'AI Dashboard',
-    description: 'Intelligent dashboard with data visualization and real-time analytics.',
-    tags: ['React', 'D3.js', 'TensorFlow.js', 'Node.js'],
-    color: '#00d4ff',
-    image: '🤖',
+    title: 'PRISMA DESIGN',
+    category: 'Brand Identity',
+    year: '2023',
+    image: '💎',
   },
 ];
 
-function ProjectCard({ project, index }: { project: typeof projects[0]; index: number }) {
-  const [isHovered, setIsHovered] = useState(false);
-  const cardRef = useRef<HTMLDivElement>(null);
-
-  return (
-    <motion.div
-      ref={cardRef}
-      initial={{ opacity: 0, y: 100 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.8, delay: index * 0.2 }}
-      viewport={{ once: true, margin: '-100px' }}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-      className="relative group"
-    >
-      <motion.div
-        className="glass-card overflow-hidden cursor-pointer"
-        whileHover={{ y: -10 }}
-        style={{
-          boxShadow: isHovered ? `0 0 40px ${project.color}40` : 'none',
-        }}
-      >
-        {/* Project Image/Visual */}
-        <div
-          className="relative h-64 overflow-hidden flex items-center justify-center"
-          style={{ background: `linear-gradient(135deg, ${project.color}20, ${project.color}05)` }}
-        >
-          <motion.div
-            animate={{ scale: isHovered ? 1.2 : 1, rotate: isHovered ? 10 : 0 }}
-            transition={{ duration: 0.5 }}
-            className="text-8xl"
-          >
-            {project.image}
-          </motion.div>
-          
-          {/* Overlay on hover */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: isHovered ? 1 : 0 }}
-            className="absolute inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center gap-4"
-          >
-            <motion.button
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-              className="p-4 rounded-full bg-primary text-primary-foreground"
-            >
-              <ExternalLink className="w-6 h-6" />
-            </motion.button>
-            <motion.button
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-              className="p-4 rounded-full border border-foreground/20 text-foreground"
-            >
-              <Github className="w-6 h-6" />
-            </motion.button>
-          </motion.div>
-        </div>
-
-        {/* Project Info */}
-        <div className="p-6">
-          <h3 className="text-2xl font-heading font-bold mb-3" style={{ color: project.color }}>
-            {project.title}
-          </h3>
-          <p className="text-muted-foreground mb-4">{project.description}</p>
-          <div className="flex flex-wrap gap-2">
-            {project.tags.map((tag) => (
-              <span
-                key={tag}
-                className="px-3 py-1 text-sm rounded-full border border-foreground/10 text-muted-foreground"
-              >
-                {tag}
-              </span>
-            ))}
-          </div>
-        </div>
-      </motion.div>
-
-      {/* Decorative corner element */}
-      <motion.div
-        className="absolute -top-2 -right-2 w-8 h-8 rounded-full"
-        style={{ background: project.color }}
-        animate={{ scale: isHovered ? 1.5 : 1, opacity: isHovered ? 0.8 : 0.4 }}
-      />
-    </motion.div>
-  );
-}
-
 export default function ProjectsSection() {
-  const ref = useRef<HTMLElement>(null);
-  const { scrollYProgress } = useScroll({
-    target: ref,
-    offset: ['start end', 'end start'],
-  });
-
-  const x = useTransform(scrollYProgress, [0, 1], ['100%', '-100%']);
+  const [hoveredId, setHoveredId] = useState<number | null>(null);
 
   return (
-    <section
-      ref={ref}
-      id="projects"
-      className="relative min-h-screen py-32 overflow-hidden"
-    >
-      {/* Animated background text */}
-      <motion.div
-        style={{ x }}
-        className="absolute top-20 left-0 text-[200px] font-heading font-bold text-muted/10 whitespace-nowrap pointer-events-none select-none"
-      >
-        PROJECTS • PROJECTS • PROJECTS •
-      </motion.div>
-
-      <div className="max-w-7xl mx-auto px-6 relative z-10">
+    <section id="projects" className="relative py-32">
+      <div className="max-w-7xl mx-auto px-6">
+        {/* Section header */}
         <motion.div
           initial={{ opacity: 0, y: 50 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
           viewport={{ once: true }}
-          className="text-center mb-20"
+          className="mb-16"
         >
-          <span className="inline-block px-4 py-2 glass-card text-sm text-accent font-medium mb-6">
-            Selected Work
+          <span className="text-primary text-sm tracking-[0.3em] mb-4 block">
+            SELECTED WORK
           </span>
-          <h2 className="text-5xl md:text-7xl font-heading font-bold mb-6">
-            My <span className="gradient-text">Projects</span>
+          <h2 className="text-6xl md:text-8xl font-display leading-none">
+            FEATURED
+            <br />
+            <span className="text-outline italic">PROJECTS</span>
           </h2>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            A showcase of my recent work, featuring innovative web experiences and creative solutions.
-          </p>
         </motion.div>
 
-        {/* Projects Grid */}
-        <div className="grid md:grid-cols-2 gap-8">
+        {/* Projects list */}
+        <div className="space-y-0">
           {projects.map((project, index) => (
-            <ProjectCard key={project.id} project={project} index={index} />
+            <motion.a
+              key={project.id}
+              href="#"
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              transition={{ duration: 0.6, delay: index * 0.1 }}
+              viewport={{ once: true }}
+              onMouseEnter={() => setHoveredId(project.id)}
+              onMouseLeave={() => setHoveredId(null)}
+              className="group block border-t border-border py-8 relative overflow-hidden"
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-8">
+                  {/* Project number */}
+                  <span className="text-muted-foreground text-sm w-8">
+                    0{project.id}
+                  </span>
+                  
+                  {/* Project title */}
+                  <h3 className="text-4xl md:text-6xl font-display group-hover:text-primary transition-colors">
+                    {project.title}
+                  </h3>
+                </div>
+
+                <div className="flex items-center gap-8">
+                  {/* Category */}
+                  <span className="hidden md:block text-muted-foreground">
+                    {project.category}
+                  </span>
+                  
+                  {/* Year */}
+                  <span className="text-muted-foreground">
+                    {project.year}
+                  </span>
+                  
+                  {/* Arrow */}
+                  <motion.div
+                    animate={{ 
+                      x: hoveredId === project.id ? 0 : -10,
+                      opacity: hoveredId === project.id ? 1 : 0 
+                    }}
+                  >
+                    <ArrowUpRight className="w-6 h-6" />
+                  </motion.div>
+                </div>
+              </div>
+
+              {/* Hover image preview */}
+              <motion.div
+                className="absolute right-32 top-1/2 -translate-y-1/2 text-8xl pointer-events-none"
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ 
+                  opacity: hoveredId === project.id ? 1 : 0,
+                  scale: hoveredId === project.id ? 1 : 0.8,
+                }}
+              >
+                {project.image}
+              </motion.div>
+            </motion.a>
           ))}
         </div>
 
-        {/* View All Button */}
+        {/* View all button */}
         <motion.div
-          initial={{ opacity: 0, y: 50 }}
+          initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.4 }}
+          transition={{ duration: 0.6 }}
           viewport={{ once: true }}
-          className="text-center mt-16"
+          className="mt-16 text-center"
         >
-          <motion.button
-            className="px-8 py-4 glass-card font-semibold border border-primary/30 text-foreground inline-flex items-center gap-2"
-            whileHover={{ scale: 1.05, borderColor: 'rgba(0, 212, 255, 0.8)' }}
-            whileTap={{ scale: 0.95 }}
+          <a 
+            href="#" 
+            className="btn-outline inline-flex items-center gap-3"
           >
-            View All Projects
-            <ExternalLink className="w-5 h-5" />
-          </motion.button>
+            VIEW ALL PROJECTS
+            <ArrowUpRight className="w-5 h-5" />
+          </a>
         </motion.div>
       </div>
-
-      {/* Gradient overlays */}
-      <div className="absolute top-1/3 right-0 w-72 h-72 bg-secondary/10 rounded-full blur-[100px] -z-10" />
-      <div className="absolute bottom-1/3 left-0 w-96 h-96 bg-accent/10 rounded-full blur-[128px] -z-10" />
     </section>
   );
 }

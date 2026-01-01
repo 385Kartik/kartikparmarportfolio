@@ -1,143 +1,133 @@
 import { useRef, useMemo } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { Float, MeshDistortMaterial, MeshWobbleMaterial } from '@react-three/drei';
+import { Environment, Float, MeshReflectorMaterial } from '@react-three/drei';
 import * as THREE from 'three';
 
-function FloatingShape({ position, color, size, speed, distort = 0.4 }: { 
+// Main reflective sphere
+function ReflectiveSphere() {
+  const meshRef = useRef<THREE.Mesh>(null);
+  const { pointer } = useThree();
+  
+  useFrame((state) => {
+    if (meshRef.current) {
+      meshRef.current.rotation.y += 0.002;
+      meshRef.current.rotation.x = THREE.MathUtils.lerp(
+        meshRef.current.rotation.x,
+        pointer.y * 0.2,
+        0.05
+      );
+      meshRef.current.rotation.z = THREE.MathUtils.lerp(
+        meshRef.current.rotation.z,
+        pointer.x * 0.1,
+        0.05
+      );
+    }
+  });
+
+  return (
+    <mesh ref={meshRef} position={[0, 0, 0]}>
+      <sphereGeometry args={[2.5, 64, 64]} />
+      <meshPhysicalMaterial
+        color="#1a1a2e"
+        metalness={1}
+        roughness={0.05}
+        envMapIntensity={2}
+        clearcoat={1}
+        clearcoatRoughness={0.1}
+      />
+    </mesh>
+  );
+}
+
+// Orbit ring
+function OrbitRing({ radius, rotation, color, thickness = 0.02 }: { 
+  radius: number; 
+  rotation: [number, number, number];
+  color: string;
+  thickness?: number;
+}) {
+  const ringRef = useRef<THREE.Mesh>(null);
+  
+  useFrame(() => {
+    if (ringRef.current) {
+      ringRef.current.rotation.z += 0.001;
+    }
+  });
+
+  return (
+    <mesh ref={ringRef} rotation={rotation}>
+      <torusGeometry args={[radius, thickness, 16, 100]} />
+      <meshBasicMaterial color={color} transparent opacity={0.4} />
+    </mesh>
+  );
+}
+
+// Small metallic spheres floating around
+function FloatingSphere({ position, color, size }: { 
   position: [number, number, number]; 
   color: string; 
   size: number;
-  speed: number;
-  distort?: number;
 }) {
   const meshRef = useRef<THREE.Mesh>(null);
   
   useFrame((state) => {
     if (meshRef.current) {
-      meshRef.current.rotation.x = Math.sin(state.clock.elapsedTime * speed) * 0.5;
-      meshRef.current.rotation.y = Math.cos(state.clock.elapsedTime * speed) * 0.5;
+      meshRef.current.position.y = position[1] + Math.sin(state.clock.elapsedTime * 0.5 + position[0]) * 0.3;
     }
   });
 
   return (
-    <Float speed={2} rotationIntensity={1.5} floatIntensity={3}>
+    <Float speed={2} rotationIntensity={0.5} floatIntensity={1}>
       <mesh ref={meshRef} position={position}>
-        <icosahedronGeometry args={[size, 1]} />
-        <MeshDistortMaterial
+        <sphereGeometry args={[size, 32, 32]} />
+        <meshPhysicalMaterial
           color={color}
-          attach="material"
-          distort={distort}
-          speed={3}
+          metalness={1}
           roughness={0.1}
-          metalness={0.9}
-          emissive={color}
-          emissiveIntensity={0.3}
+          envMapIntensity={1.5}
         />
       </mesh>
     </Float>
   );
 }
 
-function Octahedron({ position, color, size }: { position: [number, number, number]; color: string; size: number }) {
-  const meshRef = useRef<THREE.Mesh>(null);
-  
-  useFrame((state) => {
-    if (meshRef.current) {
-      meshRef.current.rotation.x = state.clock.elapsedTime * 0.3;
-      meshRef.current.rotation.y = state.clock.elapsedTime * 0.4;
-    }
-  });
-
-  return (
-    <Float speed={1.8} rotationIntensity={1} floatIntensity={2}>
-      <mesh ref={meshRef} position={position}>
-        <octahedronGeometry args={[size, 0]} />
-        <MeshWobbleMaterial
-          color={color}
-          factor={0.4}
-          speed={2}
-          roughness={0.1}
-          metalness={0.8}
-          emissive={color}
-          emissiveIntensity={0.2}
-        />
-      </mesh>
-    </Float>
-  );
-}
-
-function Torus({ position, color, size = 1 }: { position: [number, number, number]; color: string; size?: number }) {
-  const meshRef = useRef<THREE.Mesh>(null);
-  
-  useFrame((state) => {
-    if (meshRef.current) {
-      meshRef.current.rotation.x = state.clock.elapsedTime * 0.2;
-      meshRef.current.rotation.y = state.clock.elapsedTime * 0.3;
-    }
-  });
-
-  return (
-    <Float speed={1.5} rotationIntensity={0.8} floatIntensity={2}>
-      <mesh ref={meshRef} position={position}>
-        <torusGeometry args={[size, size * 0.4, 16, 32]} />
-        <meshStandardMaterial
-          color={color}
-          roughness={0.05}
-          metalness={0.95}
-          emissive={color}
-          emissiveIntensity={0.4}
-        />
-      </mesh>
-    </Float>
-  );
-}
-
-function TorusKnot({ position, color, size = 0.8 }: { position: [number, number, number]; color: string; size?: number }) {
-  const meshRef = useRef<THREE.Mesh>(null);
-  
-  useFrame((state) => {
-    if (meshRef.current) {
-      meshRef.current.rotation.x = state.clock.elapsedTime * 0.15;
-      meshRef.current.rotation.z = state.clock.elapsedTime * 0.2;
-    }
-  });
-
-  return (
-    <Float speed={1.2} rotationIntensity={0.6} floatIntensity={1.5}>
-      <mesh ref={meshRef} position={position}>
-        <torusKnotGeometry args={[size, size * 0.3, 100, 16]} />
-        <MeshDistortMaterial
-          color={color}
-          distort={0.2}
-          speed={2}
-          roughness={0.1}
-          metalness={0.9}
-          emissive={color}
-          emissiveIntensity={0.3}
-        />
-      </mesh>
-    </Float>
-  );
-}
-
-function Particles() {
-  const count = 200;
+// Star field particles
+function StarField() {
+  const count = 300;
   const positions = useMemo(() => {
     const pos = new Float32Array(count * 3);
     for (let i = 0; i < count; i++) {
-      pos[i * 3] = (Math.random() - 0.5) * 30;
-      pos[i * 3 + 1] = (Math.random() - 0.5) * 30;
-      pos[i * 3 + 2] = (Math.random() - 0.5) * 30;
+      pos[i * 3] = (Math.random() - 0.5) * 50;
+      pos[i * 3 + 1] = (Math.random() - 0.5) * 50;
+      pos[i * 3 + 2] = (Math.random() - 0.5) * 50;
     }
     return pos;
+  }, []);
+
+  const colors = useMemo(() => {
+    const cols = new Float32Array(count * 3);
+    for (let i = 0; i < count; i++) {
+      const color = new THREE.Color();
+      const rand = Math.random();
+      if (rand < 0.3) {
+        color.setHSL(0.6, 1, 0.7); // Blue
+      } else if (rand < 0.5) {
+        color.setHSL(0.85, 1, 0.7); // Pink/Magenta
+      } else {
+        color.setHSL(0, 0, 0.8); // White
+      }
+      cols[i * 3] = color.r;
+      cols[i * 3 + 1] = color.g;
+      cols[i * 3 + 2] = color.b;
+    }
+    return cols;
   }, []);
 
   const pointsRef = useRef<THREE.Points>(null);
 
   useFrame((state) => {
     if (pointsRef.current) {
-      pointsRef.current.rotation.y = state.clock.elapsedTime * 0.03;
-      pointsRef.current.rotation.x = Math.sin(state.clock.elapsedTime * 0.02) * 0.2;
+      pointsRef.current.rotation.y = state.clock.elapsedTime * 0.01;
     }
   });
 
@@ -150,96 +140,62 @@ function Particles() {
           array={positions}
           itemSize={3}
         />
+        <bufferAttribute
+          attach="attributes-color"
+          count={count}
+          array={colors}
+          itemSize={3}
+        />
       </bufferGeometry>
       <pointsMaterial
-        size={0.08}
-        color="#00d4ff"
+        size={0.05}
+        vertexColors
         sizeAttenuation
         transparent
-        opacity={0.9}
+        opacity={0.8}
       />
     </points>
-  );
-}
-
-function MouseFollower() {
-  const { viewport } = useThree();
-  const meshRef = useRef<THREE.Mesh>(null);
-  
-  useFrame((state) => {
-    if (meshRef.current) {
-      const x = (state.pointer.x * viewport.width) / 2;
-      const y = (state.pointer.y * viewport.height) / 2;
-      meshRef.current.position.x += (x - meshRef.current.position.x) * 0.05;
-      meshRef.current.position.y += (y - meshRef.current.position.y) * 0.05;
-      meshRef.current.rotation.x += 0.01;
-      meshRef.current.rotation.y += 0.01;
-    }
-  });
-
-  return (
-    <mesh ref={meshRef} position={[0, 0, 2]}>
-      <dodecahedronGeometry args={[0.5, 0]} />
-      <MeshDistortMaterial
-        color="#00d4ff"
-        distort={0.5}
-        speed={4}
-        roughness={0}
-        metalness={1}
-        emissive="#00d4ff"
-        emissiveIntensity={0.5}
-        transparent
-        opacity={0.6}
-      />
-    </mesh>
   );
 }
 
 export default function Scene3D() {
   return (
     <div className="fixed inset-0 -z-10">
-      <Canvas camera={{ position: [0, 0, 10], fov: 75 }}>
-        <ambientLight intensity={0.4} />
-        <pointLight position={[10, 10, 10]} intensity={2} color="#00d4ff" />
-        <pointLight position={[-10, -10, -10]} intensity={1} color="#ff00ff" />
-        <pointLight position={[0, 10, 5]} intensity={1.5} color="#a855f7" />
+      <Canvas camera={{ position: [0, 0, 8], fov: 60 }}>
+        <color attach="background" args={['#06060f']} />
+        <ambientLight intensity={0.2} />
+        <pointLight position={[10, 10, 10]} intensity={1} color="#3b82f6" />
+        <pointLight position={[-10, -5, -10]} intensity={0.8} color="#f97316" />
+        <pointLight position={[0, -10, 5]} intensity={0.5} color="#ec4899" />
         <spotLight
-          position={[0, 15, 0]}
-          angle={0.4}
+          position={[0, 10, 5]}
+          angle={0.5}
           penumbra={1}
           intensity={1}
-          color="#00d4ff"
+          color="#ffffff"
         />
         
-        {/* Main floating shapes - positioned around viewport */}
-        <FloatingShape position={[-5, 3, -2]} color="#00d4ff" size={1.2} speed={0.4} distort={0.5} />
-        <FloatingShape position={[5, -2, -3]} color="#ff00ff" size={1.5} speed={0.3} distort={0.6} />
-        <FloatingShape position={[0, 4, -4]} color="#a855f7" size={1} speed={0.5} />
-        <FloatingShape position={[-4, -3, -2]} color="#00d4ff" size={0.8} speed={0.35} />
-        <FloatingShape position={[4, 2, -1]} color="#ff00ff" size={1.1} speed={0.45} />
-        <FloatingShape position={[-6, 0, -5]} color="#a855f7" size={1.3} speed={0.25} />
-        <FloatingShape position={[6, 4, -6]} color="#00d4ff" size={0.9} speed={0.55} />
+        {/* Main sphere */}
+        <ReflectiveSphere />
         
-        {/* Torus shapes */}
-        <Torus position={[6, 2, -4]} color="#00d4ff" size={1.2} />
-        <Torus position={[-6, -2, -3]} color="#ff00ff" size={1} />
-        <Torus position={[0, -4, -5]} color="#a855f7" size={0.8} />
+        {/* Orbit rings */}
+        <OrbitRing radius={3.5} rotation={[Math.PI / 3, 0, 0]} color="#3b82f6" thickness={0.015} />
+        <OrbitRing radius={4} rotation={[Math.PI / 2.5, Math.PI / 4, 0]} color="#ec4899" thickness={0.01} />
+        <OrbitRing radius={4.5} rotation={[Math.PI / 4, Math.PI / 3, Math.PI / 6]} color="#3b82f6" thickness={0.008} />
         
-        {/* Octahedrons */}
-        <Octahedron position={[-3, 5, -4]} color="#ff00ff" size={0.9} />
-        <Octahedron position={[3, -4, -3]} color="#00d4ff" size={0.7} />
+        {/* Floating metallic spheres */}
+        <FloatingSphere position={[-3.5, -1.5, 1]} color="#ec4899" size={0.4} />
+        <FloatingSphere position={[3, 2, -1]} color="#ec4899" size={0.25} />
+        <FloatingSphere position={[-2, 2.5, 2]} color="#3b82f6" size={0.15} />
+        <FloatingSphere position={[4, -2, 0]} color="#f97316" size={0.2} />
+        <FloatingSphere position={[-4, 0.5, -2]} color="#ec4899" size={0.35} />
         
-        {/* Torus Knots */}
-        <TorusKnot position={[7, -3, -6]} color="#a855f7" size={0.7} />
-        <TorusKnot position={[-7, 4, -5]} color="#00d4ff" size={0.6} />
+        {/* Star field */}
+        <StarField />
         
-        {/* Mouse follower */}
-        <MouseFollower />
+        <Environment preset="night" />
         
-        {/* Particles */}
-        <Particles />
-        
-        <fog attach="fog" args={['#0a0a12', 8, 30]} />
+        <fog attach="fog" args={['#06060f', 10, 40]} />
       </Canvas>
     </div>
   );
