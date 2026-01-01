@@ -1,6 +1,6 @@
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { useRef } from 'react';
-import { ArrowDown } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 
 export default function HeroSection() {
   const ref = useRef<HTMLElement>(null);
@@ -9,73 +9,88 @@ export default function HeroSection() {
     offset: ['start start', 'end start'],
   });
 
-  const y = useTransform(scrollYProgress, [0, 1], ['0%', '50%']);
+  const y = useTransform(scrollYProgress, [0, 1], ['0%', '30%']);
   const opacity = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
-  const scale = useTransform(scrollYProgress, [0, 0.5], [1, 0.8]);
+  const scale = useTransform(scrollYProgress, [0, 0.5], [1, 0.9]);
 
   return (
     <section
       ref={ref}
       id="home"
-      className="relative min-h-screen flex items-center justify-center overflow-hidden"
+      className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20"
     >
+      {/* Large background text */}
       <motion.div
-        style={{ y, opacity, scale }}
-        className="relative z-10 text-center px-6"
+        style={{ y, opacity }}
+        className="absolute inset-0 flex items-center justify-center pointer-events-none select-none"
       >
+        <h1 className="text-[15vw] font-display text-primary/10 leading-none tracking-tight">
+          DEVELOPER
+        </h1>
+      </motion.div>
+
+      {/* Main content */}
+      <motion.div
+        style={{ scale, opacity }}
+        className="relative z-10 text-center px-6 max-w-6xl mx-auto"
+      >
+        {/* Tagline */}
         <motion.div
-          initial={{ opacity: 0, y: 50 }}
+          initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.2 }}
-          className="mb-6"
+          transition={{ duration: 0.8, delay: 0.3 }}
+          className="mb-8"
         >
-          <span className="inline-block px-4 py-2 glass-card text-sm text-primary font-medium">
-            ✨ Creative Developer & Designer
+          <span className="text-primary text-sm tracking-[0.3em] font-medium">
+            THE FUTURE OF DIGITAL INNOVATION
           </span>
         </motion.div>
 
+        {/* Large title - behind the 3D sphere */}
         <motion.h1
           initial={{ opacity: 0, y: 50 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.4 }}
-          className="text-6xl md:text-8xl font-heading font-bold mb-6 leading-tight"
+          transition={{ duration: 0.8, delay: 0.5 }}
+          className="text-7xl md:text-9xl font-display leading-none mb-8"
         >
-          <span className="block">I Create</span>
-          <span className="gradient-text">Digital</span>{' '}
-          <span className="block">Experiences</span>
+          <span className="text-primary">CREATIVE</span>
         </motion.h1>
 
+        {/* Subtitle */}
         <motion.p
-          initial={{ opacity: 0, y: 50 }}
+          initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.6 }}
-          className="text-xl text-muted-foreground max-w-2xl mx-auto mb-12"
+          transition={{ duration: 0.8, delay: 0.7 }}
+          className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-12 font-light"
         >
-          Crafting immersive web experiences with cutting-edge technologies.
-          Turning creative visions into interactive realities.
+          A high-end developer specializing in bespoke
+          <br />
+          web systems, next-gen apps, and intelligent AI.
         </motion.p>
 
+        {/* CTA Buttons */}
         <motion.div
-          initial={{ opacity: 0, y: 50 }}
+          initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.8 }}
+          transition={{ duration: 0.8, delay: 0.9 }}
           className="flex flex-wrap gap-4 justify-center"
         >
           <motion.a
             href="#projects"
-            className="px-8 py-4 bg-primary text-primary-foreground font-semibold rounded-lg inline-flex items-center gap-2"
-            whileHover={{ scale: 1.05, boxShadow: '0 0 30px rgba(0, 212, 255, 0.5)' }}
+            className="btn-primary inline-flex items-center gap-3"
+            whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
-            View My Work
+            Launch Project
+            <ArrowRight className="w-5 h-5" />
           </motion.a>
           <motion.a
-            href="#contact"
-            className="px-8 py-4 glass-card font-semibold border border-primary/30 text-foreground inline-flex items-center gap-2"
-            whileHover={{ scale: 1.05, borderColor: 'rgba(0, 212, 255, 0.8)' }}
+            href="#about"
+            className="btn-outline inline-flex items-center gap-3"
+            whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
-            Get In Touch
+            View Reel
           </motion.a>
         </motion.div>
       </motion.div>
@@ -84,22 +99,32 @@ export default function HeroSection() {
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ delay: 1.2 }}
-        className="absolute bottom-10 left-1/2 -translate-x-1/2"
+        transition={{ delay: 1.5 }}
+        className="absolute bottom-10 left-10"
       >
-        <motion.div
-          animate={{ y: [0, 10, 0] }}
-          transition={{ duration: 1.5, repeat: Infinity }}
-          className="flex flex-col items-center gap-2 text-muted-foreground"
-        >
-          <span className="text-sm">Scroll to explore</span>
-          <ArrowDown className="w-5 h-5" />
-        </motion.div>
+        <span className="text-xs tracking-[0.3em] text-muted-foreground">
+          SCROLL TO EXPLORE
+        </span>
       </motion.div>
 
-      {/* Gradient overlays */}
-      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/20 rounded-full blur-[128px] -z-10" />
-      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-secondary/20 rounded-full blur-[128px] -z-10" />
+      {/* Social links - vertical on right */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 1.5 }}
+        className="absolute right-10 top-1/2 -translate-y-1/2 hidden lg:flex flex-col gap-6"
+      >
+        {['INSTAGRAM', 'TWITTER', 'DRIBBBLE'].map((social) => (
+          <a
+            key={social}
+            href="#"
+            className="text-xs tracking-widest text-muted-foreground hover:text-foreground transition-colors"
+            style={{ writingMode: 'vertical-rl' }}
+          >
+            {social}
+          </a>
+        ))}
+      </motion.div>
     </section>
   );
 }

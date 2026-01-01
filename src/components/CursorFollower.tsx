@@ -2,18 +2,20 @@ import { useEffect, useState } from 'react';
 import { motion, useSpring } from 'framer-motion';
 
 export default function CursorFollower() {
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [isHovering, setIsHovering] = useState(false);
 
-  const springConfig = { damping: 25, stiffness: 300 };
+  const springConfig = { damping: 30, stiffness: 400 };
   const cursorX = useSpring(0, springConfig);
   const cursorY = useSpring(0, springConfig);
+  const trailX = useSpring(0, { damping: 50, stiffness: 200 });
+  const trailY = useSpring(0, { damping: 50, stiffness: 200 });
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
-      setMousePosition({ x: e.clientX, y: e.clientY });
       cursorX.set(e.clientX);
       cursorY.set(e.clientY);
+      trailX.set(e.clientX);
+      trailY.set(e.clientY);
     };
 
     const handleMouseOver = (e: MouseEvent) => {
@@ -32,41 +34,35 @@ export default function CursorFollower() {
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('mouseover', handleMouseOver);
     };
-  }, [cursorX, cursorY]);
+  }, [cursorX, cursorY, trailX, trailY]);
 
   return (
     <>
-      {/* Main cursor */}
+      {/* Trail circle */}
       <motion.div
-        className="fixed pointer-events-none z-[9999] mix-blend-difference"
+        className="fixed pointer-events-none z-[9998] rounded-full border border-primary/50"
+        style={{
+          x: trailX,
+          y: trailY,
+          translateX: '-50%',
+          translateY: '-50%',
+          width: isHovering ? 60 : 40,
+          height: isHovering ? 60 : 40,
+        }}
+      />
+      
+      {/* Main cursor dot */}
+      <motion.div
+        className="fixed pointer-events-none z-[9999] rounded-full bg-primary"
         style={{
           x: cursorX,
           y: cursorY,
           translateX: '-50%',
           translateY: '-50%',
+          width: 8,
+          height: 8,
         }}
-      >
-        <motion.div
-          className="rounded-full bg-primary"
-          animate={{
-            width: isHovering ? 60 : 12,
-            height: isHovering ? 60 : 12,
-          }}
-          transition={{ type: 'spring', damping: 20, stiffness: 300 }}
-        />
-      </motion.div>
-
-      {/* Trailing cursor */}
-      <motion.div
-        className="fixed pointer-events-none z-[9998]"
-        animate={{
-          x: mousePosition.x - 20,
-          y: mousePosition.y - 20,
-        }}
-        transition={{ type: 'spring', damping: 30, stiffness: 200, mass: 0.5 }}
-      >
-        <div className="w-10 h-10 rounded-full border border-primary/50" />
-      </motion.div>
+      />
     </>
   );
 }
