@@ -1,21 +1,29 @@
 import { motion } from 'framer-motion';
 import { useState } from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import MagneticButton from './MagneticButton';
 
 const navItems = [
-  { name: 'SERVICES', href: '#services' },
-  { name: 'PROJECTS', href: '#projects' },
-  { name: 'ABOUT', href: '#about' },
-  { name: 'CONTACT', href: '#contact' },
+  { name: 'SERVICES', href: '/#services' },
+  { name: 'PROJECTS', href: '/#projects' },
+  { name: 'ABOUT', href: '/about' },
+  { name: 'CONTACT', href: '/#contact' },
 ];
 
 export default function Navbar() {
-  const [activeSection, setActiveSection] = useState('');
+  const location = useLocation();
+  const [hoveredItem, setHoveredItem] = useState<string | null>(null);
 
-  const handleClick = (href: string) => {
-    const section = href.replace('#', '');
-    setActiveSection(section);
-    const element = document.querySelector(href);
-    element?.scrollIntoView({ behavior: 'smooth' });
+  const handleNavClick = (href: string) => {
+    if (href.startsWith('/#')) {
+      const section = href.replace('/#', '');
+      if (location.pathname === '/') {
+        const element = document.querySelector(`#${section}`);
+        element?.scrollIntoView({ behavior: 'smooth' });
+      } else {
+        window.location.href = href;
+      }
+    }
   };
 
   return (
@@ -27,42 +35,70 @@ export default function Navbar() {
     >
       <div className="max-w-7xl mx-auto flex justify-between items-center">
         {/* Logo */}
-        <motion.a
-          href="#"
-          className="flex items-center gap-2"
-          whileHover={{ scale: 1.02 }}
-        >
-          <span className="text-2xl font-display tracking-wider">PORTFOLIO</span>
-          <span className="w-2 h-2 rounded-full bg-primary" />
-        </motion.a>
+        <Link to="/">
+          <motion.div
+            className="flex items-center gap-2 cursor-pointer"
+            whileHover={{ scale: 1.02 }}
+          >
+            <span className="text-2xl font-display tracking-wider">PORTFOLIO</span>
+            <motion.span 
+              className="w-2 h-2 rounded-full bg-primary"
+              animate={{ scale: [1, 1.2, 1] }}
+              transition={{ duration: 2, repeat: Infinity }}
+            />
+          </motion.div>
+        </Link>
 
         {/* Navigation */}
         <ul className="hidden md:flex gap-10">
           {navItems.map((item) => (
             <li key={item.name}>
-              <motion.a
-                href={item.href}
-                onClick={(e) => {
-                  e.preventDefault();
-                  handleClick(item.href);
-                }}
-                className="text-sm tracking-widest text-muted-foreground hover:text-foreground transition-colors"
-                whileHover={{ y: -2 }}
-              >
-                {item.name}
-              </motion.a>
+              {item.href.startsWith('/') && !item.href.startsWith('/#') ? (
+                <Link to={item.href}>
+                  <motion.span
+                    onMouseEnter={() => setHoveredItem(item.name)}
+                    onMouseLeave={() => setHoveredItem(null)}
+                    className="text-sm tracking-widest text-muted-foreground hover:text-foreground transition-colors cursor-pointer relative"
+                    whileHover={{ y: -2 }}
+                  >
+                    {item.name}
+                    <motion.span
+                      className="absolute -bottom-1 left-0 h-0.5 bg-primary"
+                      initial={{ width: 0 }}
+                      animate={{ width: hoveredItem === item.name ? '100%' : 0 }}
+                      transition={{ duration: 0.2 }}
+                    />
+                  </motion.span>
+                </Link>
+              ) : (
+                <motion.a
+                  href={item.href}
+                  onMouseEnter={() => setHoveredItem(item.name)}
+                  onMouseLeave={() => setHoveredItem(null)}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handleNavClick(item.href);
+                  }}
+                  className="text-sm tracking-widest text-muted-foreground hover:text-foreground transition-colors relative"
+                  whileHover={{ y: -2 }}
+                >
+                  {item.name}
+                  <motion.span
+                    className="absolute -bottom-1 left-0 h-0.5 bg-primary"
+                    initial={{ width: 0 }}
+                    animate={{ width: hoveredItem === item.name ? '100%' : 0 }}
+                    transition={{ duration: 0.2 }}
+                  />
+                </motion.a>
+              )}
             </li>
           ))}
         </ul>
 
         {/* CTA Button */}
-        <motion.button
-          className="btn-primary text-sm tracking-wider"
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-        >
+        <MagneticButton className="btn-primary text-sm tracking-wider">
           GET IN TOUCH
-        </motion.button>
+        </MagneticButton>
       </div>
     </motion.nav>
   );

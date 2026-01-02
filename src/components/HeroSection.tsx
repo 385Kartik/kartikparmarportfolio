@@ -1,6 +1,8 @@
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { useRef } from 'react';
 import { ArrowRight } from 'lucide-react';
+import MagneticButton from './MagneticButton';
+import InteractiveText from './InteractiveText';
 
 export default function HeroSection() {
   const ref = useRef<HTMLElement>(null);
@@ -9,9 +11,9 @@ export default function HeroSection() {
     offset: ['start start', 'end start'],
   });
 
-  const y = useTransform(scrollYProgress, [0, 1], ['0%', '30%']);
+  const y = useTransform(scrollYProgress, [0, 1], ['0%', '50%']);
   const opacity = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
-  const scale = useTransform(scrollYProgress, [0, 0.5], [1, 0.9]);
+  const scale = useTransform(scrollYProgress, [0, 0.5], [1, 0.8]);
 
   return (
     <section
@@ -46,14 +48,14 @@ export default function HeroSection() {
           </span>
         </motion.div>
 
-        {/* Large title - behind the 3D sphere */}
+        {/* Large title with interactive letters */}
         <motion.h1
           initial={{ opacity: 0, y: 50 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.5 }}
           className="text-7xl md:text-9xl font-display leading-none mb-8"
         >
-          <span className="text-primary">CREATIVE</span>
+          <InteractiveText text="CREATIVE" className="text-primary" />
         </motion.h1>
 
         {/* Subtitle */}
@@ -68,30 +70,20 @@ export default function HeroSection() {
           web systems, next-gen apps, and intelligent AI.
         </motion.p>
 
-        {/* CTA Buttons */}
+        {/* CTA Buttons with magnetic effect */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.9 }}
-          className="flex flex-wrap gap-4 justify-center"
+          className="flex flex-wrap gap-6 justify-center"
         >
-          <motion.a
-            href="#projects"
-            className="btn-primary inline-flex items-center gap-3"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-          >
+          <MagneticButton href="#projects" className="btn-primary inline-flex items-center gap-3">
             Launch Project
             <ArrowRight className="w-5 h-5" />
-          </motion.a>
-          <motion.a
-            href="#about"
-            className="btn-outline inline-flex items-center gap-3"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-          >
+          </MagneticButton>
+          <MagneticButton href="#about" className="btn-outline inline-flex items-center gap-3">
             View Reel
-          </motion.a>
+          </MagneticButton>
         </motion.div>
       </motion.div>
 
@@ -102,9 +94,13 @@ export default function HeroSection() {
         transition={{ delay: 1.5 }}
         className="absolute bottom-10 left-10"
       >
-        <span className="text-xs tracking-[0.3em] text-muted-foreground">
+        <motion.span 
+          className="text-xs tracking-[0.3em] text-muted-foreground"
+          animate={{ opacity: [0.5, 1, 0.5] }}
+          transition={{ duration: 2, repeat: Infinity }}
+        >
           SCROLL TO EXPLORE
-        </span>
+        </motion.span>
       </motion.div>
 
       {/* Social links - vertical on right */}
@@ -114,15 +110,19 @@ export default function HeroSection() {
         transition={{ delay: 1.5 }}
         className="absolute right-10 top-1/2 -translate-y-1/2 hidden lg:flex flex-col gap-6"
       >
-        {['INSTAGRAM', 'TWITTER', 'DRIBBBLE'].map((social) => (
-          <a
+        {['INSTAGRAM', 'TWITTER', 'DRIBBBLE'].map((social, index) => (
+          <motion.a
             key={social}
             href="#"
-            className="text-xs tracking-widest text-muted-foreground hover:text-foreground transition-colors"
+            className="text-xs tracking-widest text-muted-foreground hover:text-primary transition-colors"
             style={{ writingMode: 'vertical-rl' }}
+            whileHover={{ x: -5, color: 'hsl(var(--primary))' }}
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 1.5 + index * 0.1 }}
           >
             {social}
-          </a>
+          </motion.a>
         ))}
       </motion.div>
     </section>

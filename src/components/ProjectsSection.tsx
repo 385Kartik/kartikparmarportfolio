@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { useState } from 'react';
 import { ArrowUpRight } from 'lucide-react';
+import MagneticButton from './MagneticButton';
 
 const projects = [
   {
@@ -37,7 +38,7 @@ export default function ProjectsSection() {
   const [hoveredId, setHoveredId] = useState<number | null>(null);
 
   return (
-    <section id="projects" className="relative py-32">
+    <section id="projects" className="relative py-32 bg-background">
       <div className="max-w-7xl mx-auto px-6">
         {/* Section header */}
         <motion.div
@@ -71,17 +72,37 @@ export default function ProjectsSection() {
               onMouseLeave={() => setHoveredId(null)}
               className="group block border-t border-border py-8 relative overflow-hidden"
             >
-              <div className="flex items-center justify-between">
+              {/* Background hover effect */}
+              <motion.div
+                className="absolute inset-0 bg-primary/5"
+                initial={{ x: '-100%' }}
+                animate={{ x: hoveredId === project.id ? '0%' : '-100%' }}
+                transition={{ duration: 0.4 }}
+              />
+
+              <div className="flex items-center justify-between relative z-10">
                 <div className="flex items-center gap-8">
                   {/* Project number */}
-                  <span className="text-muted-foreground text-sm w-8">
+                  <motion.span 
+                    className="text-muted-foreground text-sm w-8"
+                    animate={{ 
+                      color: hoveredId === project.id ? 'hsl(var(--primary))' : 'hsl(var(--muted-foreground))'
+                    }}
+                  >
                     0{project.id}
-                  </span>
+                  </motion.span>
                   
                   {/* Project title */}
-                  <h3 className="text-4xl md:text-6xl font-display group-hover:text-primary transition-colors">
+                  <motion.h3 
+                    className="text-4xl md:text-6xl font-display transition-colors"
+                    animate={{
+                      color: hoveredId === project.id ? 'hsl(var(--primary))' : 'hsl(var(--foreground))',
+                      x: hoveredId === project.id ? 20 : 0
+                    }}
+                    transition={{ duration: 0.3 }}
+                  >
                     {project.title}
-                  </h3>
+                  </motion.h3>
                 </div>
 
                 <div className="flex items-center gap-8">
@@ -99,8 +120,10 @@ export default function ProjectsSection() {
                   <motion.div
                     animate={{ 
                       x: hoveredId === project.id ? 0 : -10,
-                      opacity: hoveredId === project.id ? 1 : 0 
+                      opacity: hoveredId === project.id ? 1 : 0,
+                      rotate: hoveredId === project.id ? 0 : -45
                     }}
+                    transition={{ duration: 0.3 }}
                   >
                     <ArrowUpRight className="w-6 h-6" />
                   </motion.div>
@@ -110,11 +133,13 @@ export default function ProjectsSection() {
               {/* Hover image preview */}
               <motion.div
                 className="absolute right-32 top-1/2 -translate-y-1/2 text-8xl pointer-events-none"
-                initial={{ opacity: 0, scale: 0.8 }}
+                initial={{ opacity: 0, scale: 0.8, rotate: -10 }}
                 animate={{ 
                   opacity: hoveredId === project.id ? 1 : 0,
                   scale: hoveredId === project.id ? 1 : 0.8,
+                  rotate: hoveredId === project.id ? 0 : -10,
                 }}
+                transition={{ type: 'spring', stiffness: 200 }}
               >
                 {project.image}
               </motion.div>
@@ -130,13 +155,10 @@ export default function ProjectsSection() {
           viewport={{ once: true }}
           className="mt-16 text-center"
         >
-          <a 
-            href="#" 
-            className="btn-outline inline-flex items-center gap-3"
-          >
+          <MagneticButton href="#" className="btn-outline inline-flex items-center gap-3">
             VIEW ALL PROJECTS
             <ArrowUpRight className="w-5 h-5" />
-          </a>
+          </MagneticButton>
         </motion.div>
       </div>
     </section>
