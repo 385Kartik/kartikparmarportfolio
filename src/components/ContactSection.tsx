@@ -1,15 +1,28 @@
 import { motion } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
+import MagneticButton from './MagneticButton';
 
 export default function ContactSection() {
   return (
-    <section id="contact" className="relative py-32 overflow-hidden">
+    <section id="contact" className="relative py-32 overflow-hidden bg-background">
       {/* CTA Section */}
       <div className="max-w-7xl mx-auto px-6">
-        <div className="bg-muted rounded-3xl p-12 md:p-20 text-center relative overflow-hidden">
+        <motion.div 
+          className="bg-muted rounded-3xl p-12 md:p-20 text-center relative overflow-hidden"
+          initial={{ opacity: 0, y: 50 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+          viewport={{ once: true }}
+          whileHover={{ scale: 1.01 }}
+        >
           {/* Background decoration */}
           <div className="absolute inset-0 opacity-30">
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-radial from-primary/20 to-transparent" />
+            <motion.div 
+              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full"
+              style={{ background: 'radial-gradient(circle, hsl(var(--primary) / 0.2), transparent)' }}
+              animate={{ scale: [1, 1.2, 1] }}
+              transition={{ duration: 4, repeat: Infinity }}
+            />
           </div>
           
           <motion.div
@@ -33,17 +46,15 @@ export default function ContactSection() {
               Let's build something that matters.
             </p>
 
-            <motion.a
+            <MagneticButton
               href="#"
               className="btn-primary inline-flex items-center gap-4 text-lg"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
             >
               START A CONVERSATION
               <ArrowRight className="w-6 h-6" />
-            </motion.a>
+            </MagneticButton>
           </motion.div>
-        </div>
+        </motion.div>
       </div>
 
       {/* Footer */}
@@ -54,7 +65,11 @@ export default function ContactSection() {
             <div>
               <div className="flex items-center gap-2 mb-6">
                 <span className="text-2xl font-display tracking-wider">PORTFOLIO</span>
-                <span className="w-2 h-2 rounded-full bg-primary" />
+                <motion.span 
+                  className="w-2 h-2 rounded-full bg-primary"
+                  animate={{ scale: [1, 1.3, 1] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                />
               </div>
               <p className="text-muted-foreground max-w-xs">
                 Engineering the next generation of digital products with precision and artistic flair.
@@ -67,9 +82,13 @@ export default function ContactSection() {
               <ul className="space-y-4">
                 {['Our Services', 'Success Stories', 'About Us', 'Contact'].map((item) => (
                   <li key={item}>
-                    <a href="#" className="text-foreground/80 hover:text-foreground transition-colors">
+                    <motion.a 
+                      href="#" 
+                      className="text-foreground/80 hover:text-primary transition-colors"
+                      whileHover={{ x: 5 }}
+                    >
                       {item}
-                    </a>
+                    </motion.a>
                   </li>
                 ))}
               </ul>
@@ -80,9 +99,13 @@ export default function ContactSection() {
               <h4 className="text-sm tracking-[0.2em] text-muted-foreground mb-6">CONTACT</h4>
               <ul className="space-y-4">
                 <li>
-                  <a href="mailto:hello@portfolio.dev" className="text-foreground/80 hover:text-foreground transition-colors">
+                  <motion.a 
+                    href="mailto:hello@portfolio.dev" 
+                    className="text-foreground/80 hover:text-primary transition-colors"
+                    whileHover={{ x: 5 }}
+                  >
                     hello@portfolio.dev
-                  </a>
+                  </motion.a>
                 </li>
                 <li className="text-muted-foreground">
                   London / NYC / Remote
@@ -98,13 +121,14 @@ export default function ContactSection() {
             </p>
             <div className="flex gap-6">
               {['Twitter', 'LinkedIn', 'Dribbble', 'GitHub'].map((social) => (
-                <a
+                <motion.a
                   key={social}
                   href="#"
-                  className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                  className="text-sm text-muted-foreground hover:text-primary transition-colors"
+                  whileHover={{ y: -3 }}
                 >
                   {social}
-                </a>
+                </motion.a>
               ))}
             </div>
           </div>
