@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Bebas+Neue&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Bebas+Neue&family=Space+Grotesk:wght@400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,13 +6,13 @@
 
 @layer base {
   :root {
-    --background: 220 20% 4%;
+    --background: 220 25% 3%;
     --foreground: 0 0% 98%;
 
-    --card: 220 20% 8%;
+    --card: 220 20% 6%;
     --card-foreground: 0 0% 98%;
 
-    --popover: 220 20% 8%;
+    --popover: 220 20% 6%;
     --popover-foreground: 0 0% 98%;
 
     --primary: 217 91% 60%;
@@ -21,7 +21,7 @@
     --secondary: 25 95% 53%;
     --secondary-foreground: 0 0% 100%;
 
-    --muted: 220 15% 15%;
+    --muted: 220 15% 12%;
     --muted-foreground: 220 10% 50%;
 
     --accent: 280 100% 70%;
@@ -30,8 +30,8 @@
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 220 15% 20%;
-    --input: 220 15% 20%;
+    --border: 220 15% 15%;
+    --input: 220 15% 15%;
     --ring: 217 91% 60%;
 
     --radius: 1.5rem;
@@ -39,6 +39,7 @@
     /* Custom design tokens */
     --gradient-blue: linear-gradient(135deg, hsl(217 91% 60%) 0%, hsl(200 100% 50%) 100%);
     --gradient-orange: linear-gradient(135deg, hsl(25 95% 53%) 0%, hsl(15 100% 60%) 100%);
+    --gradient-pink: linear-gradient(135deg, hsl(330 90% 60%) 0%, hsl(280 100% 70%) 100%);
     
     --shadow-glow-blue: 0 0 60px hsl(217 91% 60% / 0.3);
     --shadow-glow-orange: 0 0 40px hsl(25 95% 53% / 0.4);
@@ -86,35 +87,42 @@
 
   .btn-primary {
     @apply bg-foreground text-background px-8 py-4 rounded-full font-semibold transition-all duration-300;
+    box-shadow: 0 4px 20px rgba(255, 255, 255, 0.1);
   }
 
   .btn-primary:hover {
     @apply scale-105;
-    box-shadow: 0 10px 40px rgba(255, 255, 255, 0.2);
+    box-shadow: 0 10px 40px rgba(255, 255, 255, 0.25);
   }
 
   .btn-outline {
-    @apply border border-foreground/30 px-8 py-4 rounded-full font-semibold transition-all duration-300;
+    @apply border border-foreground/30 px-8 py-4 rounded-full font-semibold transition-all duration-300 bg-transparent;
   }
 
   .btn-outline:hover {
-    @apply border-foreground/60 scale-105;
+    @apply border-foreground/80 scale-105 bg-foreground/5;
   }
 
   .service-card {
     @apply relative p-8 rounded-3xl transition-all duration-500;
-    background: linear-gradient(180deg, hsl(220 20% 10%) 0%, hsl(220 20% 6%) 100%);
-    border: 1px solid hsl(220 15% 15%);
+    background: linear-gradient(180deg, hsl(220 20% 8%) 0%, hsl(220 20% 5%) 100%);
+    border: 1px solid hsl(220 15% 12%);
   }
 
   .service-card:hover {
     transform: translateY(-8px);
-    border-color: hsl(220 15% 25%);
+    border-color: hsl(220 15% 20%);
   }
 
   .text-outline {
-    -webkit-text-stroke: 1px hsl(var(--muted-foreground));
+    -webkit-text-stroke: 2px hsl(var(--foreground) / 0.3);
     color: transparent;
+  }
+
+  .glass-card {
+    background: hsl(var(--background) / 0.6);
+    backdrop-filter: blur(20px);
+    border: 1px solid hsl(var(--border) / 0.5);
   }
 }
 
@@ -128,7 +136,7 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  background: hsl(var(--muted));
+  background: hsl(var(--primary) / 0.3);
   border-radius: 3px;
 }
 
