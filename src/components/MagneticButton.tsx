@@ -10,24 +10,24 @@ interface MagneticButtonProps {
 
 export default function MagneticButton({ children, className = '', onClick, href }: MagneticButtonProps) {
   const ref = useRef<HTMLDivElement>(null);
-  
+
   const x = useMotionValue(0);
   const y = useMotionValue(0);
-  
+
   const springConfig = { damping: 15, stiffness: 150 };
   const springX = useSpring(x, springConfig);
   const springY = useSpring(y, springConfig);
 
   const handleMouseMove = (e: React.MouseEvent) => {
     if (!ref.current) return;
-    
+
     const rect = ref.current.getBoundingClientRect();
     const centerX = rect.left + rect.width / 2;
     const centerY = rect.top + rect.height / 2;
-    
+
     const distanceX = e.clientX - centerX;
     const distanceY = e.clientY - centerY;
-    
+
     x.set(distanceX * 0.3);
     y.set(distanceY * 0.3);
   };
@@ -58,7 +58,28 @@ export default function MagneticButton({ children, className = '', onClick, href
   );
 
   if (href) {
-    return <a href={href}>{content}</a>;
+    return (
+      <a
+        href={href}
+        onClick={(e) => {
+          // Handle hash-based links with smooth scroll
+          const hashPart = href.startsWith('/#') ? href.slice(1) : href.startsWith('#') ? href : null;
+          if (hashPart) {
+            const id = hashPart.replace('#', '');
+            const el = document.getElementById(id);
+            // Same page — smooth scroll
+            if (el && (window.location.pathname === '/' || href.startsWith('#'))) {
+              e.preventDefault();
+              el.scrollIntoView({ behavior: 'smooth' });
+            }
+            // Different page — let the browser navigate to /#hash
+          }
+          if (onClick) onClick();
+        }}
+      >
+        {content}
+      </a>
+    );
   }
 
   return content;

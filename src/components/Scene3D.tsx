@@ -1,71 +1,72 @@
-import { useRef, useMemo, useEffect, useState } from 'react';
+import { useRef, useMemo, useState } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { Environment, Float, Trail, Sparkles } from '@react-three/drei';
+import { Environment, Float, Sparkles, Trail } from '@react-three/drei';
 import * as THREE from 'three';
 
-// Mouse position store
-let mouseX = 0;
-let mouseY = 0;
-
-// Main reflective sphere with dramatic cursor rotation
-function ReflectiveSphere({ scrollY }: { scrollY: number }) {
+// --- 1. INTERACTIVE CORE SPHERE ---
+// Reacts to Hover (Speed/Scale) and Click (Shockwave)
+function InteractiveCore() {
   const meshRef = useRef<THREE.Mesh>(null);
   const glowRef = useRef<THREE.Mesh>(null);
-  const { pointer, viewport } = useThree();
+  const { pointer } = useThree();
   
-  useFrame((state) => {
+  const [hovered, setHover] = useState(false);
+  const [active, setActive] = useState(false);
+
+  useFrame((state, delta) => {
+    const time = state.clock.elapsedTime;
+    const scrollY = window.scrollY;
+
     if (meshRef.current) {
-      // Dramatic rotation based on cursor
-      meshRef.current.rotation.y = THREE.MathUtils.lerp(
-        meshRef.current.rotation.y,
-        pointer.x * Math.PI * 0.5 + state.clock.elapsedTime * 0.1,
-        0.08
-      );
+      // Rotation logic: Base speed + Hover boost + Mouse influence
+      const rotationSpeed = hovered ? 1.5 : 0.2;
+      
+      meshRef.current.rotation.y += delta * rotationSpeed;
       meshRef.current.rotation.x = THREE.MathUtils.lerp(
         meshRef.current.rotation.x,
-        pointer.y * Math.PI * 0.3 - scrollY * 0.001,
-        0.08
+        pointer.y * 0.5 + (active ? time * 5 : 0), // Spin fast on click
+        0.1
       );
-      meshRef.current.rotation.z = THREE.MathUtils.lerp(
-        meshRef.current.rotation.z,
-        Math.sin(state.clock.elapsedTime * 0.5) * 0.1,
-        0.05
-      );
-      
-      // Subtle position shift based on cursor
-      meshRef.current.position.x = THREE.MathUtils.lerp(
-        meshRef.current.position.x,
-        pointer.x * 0.5,
-        0.05
-      );
-      meshRef.current.position.y = THREE.MathUtils.lerp(
-        meshRef.current.position.y,
-        pointer.y * 0.3 - scrollY * 0.002,
-        0.05
-      );
+
+      // Scale logic: Breathe normally, expand on hover, pulse on click
+      const targetScale = active ? 1.2 : (hovered ? 1.1 : 1);
+      const currentScale = meshRef.current.scale.x;
+      const smoothScale = THREE.MathUtils.lerp(currentScale, targetScale, 0.1);
+      meshRef.current.scale.setScalar(smoothScale);
+
+      // Position Parallax
+      meshRef.current.position.x = THREE.MathUtils.lerp(meshRef.current.position.x, pointer.x * 1.5, 0.05);
+      meshRef.current.position.y = THREE.MathUtils.lerp(meshRef.current.position.y, pointer.y * 1.5 - scrollY * 0.002, 0.05);
     }
     
     if (glowRef.current) {
-      glowRef.current.rotation.y = state.clock.elapsedTime * 0.2;
-      glowRef.current.scale.setScalar(1 + Math.sin(state.clock.elapsedTime * 2) * 0.05);
+      // Glow pulse
+      glowRef.current.rotation.y -= delta * 0.5;
+      const glowIntensity = hovered ? 1.2 : 1;
+      glowRef.current.scale.setScalar((1 + Math.sin(time * 2) * 0.05) * glowIntensity);
     }
   });
 
   return (
-    <group>
-      {/* Inner glow sphere */}
-      <mesh ref={glowRef} position={[0, 0, 0]}>
-        <sphereGeometry args={[2.7, 32, 32]} />
-        <meshBasicMaterial color="#3b82f6" transparent opacity={0.1} />
+    <group 
+      onPointerOver={() => { document.body.style.cursor = 'pointer'; setHover(true); }}
+      onPointerOut={() => { document.body.style.cursor = 'auto'; setHover(false); }}
+      onPointerDown={() => setActive(true)}
+      onPointerUp={() => setActive(false)}
+    >
+      {/* Outer Glow */}
+      <mesh ref={glowRef}>
+        <sphereGeometry args={[2.8, 32, 32]} />
+        <meshBasicMaterial color="#3b82f6" transparent opacity={hovered ? 0.15 : 0.05} />
       </mesh>
       
-      {/* Main sphere */}
-      <mesh ref={meshRef} position={[0, 0, 0]}>
-        <icosahedronGeometry args={[2.5, 4]} />
+      {/* Core Object */}
+      <mesh ref={meshRef}>
+        <icosahedronGeometry args={[2.5, 5]} /> {/* Higher detail */}
         <meshPhysicalMaterial
-          color="#0a0a1a"
+          color={active ? "#60a5fa" : "#0a0a1a"} // Flash blue on click
           metalness={1}
-          roughness={0.02}
+          roughness={hovered ? 0.1 : 0.02} // Rougher on hover looks like energy
           envMapIntensity={3}
           clearcoat={1}
           clearcoatRoughness={0.05}
@@ -77,226 +78,259 @@ function ReflectiveSphere({ scrollY }: { scrollY: number }) {
   );
 }
 
-// Orbit ring with cursor reaction
-function OrbitRing({ radius, rotation, color, thickness = 0.02, scrollY, speed = 1 }: { 
-  radius: number; 
-  rotation: [number, number, number];
-  color: string;
-  thickness?: number;
-  scrollY: number;
-  speed?: number;
-}) {
-  const ringRef = useRef<THREE.Mesh>(null);
-  const { pointer } = useThree();
+// Reusable objects to avoid GC spikes
+const _tempVec = new THREE.Vector3();
+const _mouseVec = new THREE.Vector3();
+const _targetVec = new THREE.Vector3();
+const _dirVec = new THREE.Vector3();
+
+function InteractiveParticles() {
+  const count = 1000; // Reduced from 1500 for better performance
+  const meshRef = useRef<THREE.Points>(null);
+  const { mouse, camera } = useThree();
   
-  useFrame((state) => {
-    if (ringRef.current) {
-      ringRef.current.rotation.z += 0.002 * speed;
-      ringRef.current.rotation.x = rotation[0] + pointer.y * 0.2;
-      ringRef.current.rotation.y = rotation[1] + pointer.x * 0.2;
-      ringRef.current.position.y = -scrollY * 0.001;
+  const { positions, originalPositions, colors } = useMemo(() => {
+    const pos = new Float32Array(count * 3);
+    const orig = new Float32Array(count * 3);
+    const cols = new Float32Array(count * 3);
+    const color = new THREE.Color();
+    
+    for (let i = 0; i < count; i++) {
+      const x = (Math.random() - 0.5) * 60;
+      const y = (Math.random() - 0.5) * 60;
+      const z = (Math.random() - 0.5) * 40 - 10;
+
+      pos[i * 3] = x; pos[i * 3 + 1] = y; pos[i * 3 + 2] = z;
+      orig[i * 3] = x; orig[i * 3 + 1] = y; orig[i * 3 + 2] = z;
+
+      if (Math.random() > 0.6) color.setHex(0x3b82f6);
+      else if (Math.random() > 0.3) color.setHex(0xec4899);
+      else color.setHex(0xffffff);
+      
+      cols[i * 3] = color.r; cols[i * 3 + 1] = color.g; cols[i * 3 + 2] = color.b;
+    }
+    return { positions: pos, originalPositions: orig, colors: cols };
+  }, []);
+
+  useFrame(() => {
+    if (!meshRef.current) return;
+
+    const positionsArray = meshRef.current.geometry.attributes.position.array as Float32Array;
+    
+    // Project mouse to world space once per frame
+    _mouseVec.set(mouse.x, mouse.y, 0.5);
+    _mouseVec.unproject(camera);
+    _dirVec.copy(_mouseVec).sub(camera.position).normalize();
+    const distance = -camera.position.z / _dirVec.z;
+    _mouseVec.copy(camera.position).add(_dirVec.multiplyScalar(distance));
+
+    for (let i = 0; i < count; i++) {
+      const i3 = i * 3;
+      
+      // Use index access instead of Vector3 creation
+      const px = positionsArray[i3];
+      const py = positionsArray[i3 + 1];
+      const pz = positionsArray[i3 + 2];
+      
+      const ox = originalPositions[i3];
+      const oy = originalPositions[i3 + 1];
+      const oz = originalPositions[i3 + 2];
+
+      // Distance check without Vector3 allocation
+      const dx = px - _mouseVec.x;
+      const dy = py - _mouseVec.y;
+      const dz = pz - _mouseVec.z;
+      const distSq = dx * dx + dy * dy + dz * dz;
+      
+      const repelRange = 8;
+      const repelRangeSq = repelRange * repelRange;
+      const repelStrength = 0.5;
+
+      let tx = ox;
+      let ty = oy;
+      let tz = oz;
+
+      if (distSq < repelRangeSq) {
+        const dist = Math.sqrt(distSq);
+        const force = (1 - dist / repelRange) * repelStrength;
+        // Simple repulsion vector
+        tx += (dx / dist) * force * 10;
+        ty += (dy / dist) * force * 10;
+        tz += (dz / dist) * force * 10;
+      }
+
+      // Lerp back to target
+      positionsArray[i3] += (tx - px) * 0.05;
+      positionsArray[i3 + 1] += (ty - py) * 0.05;
+      positionsArray[i3 + 2] += (tz - pz) * 0.05;
+    }
+    
+    meshRef.current.geometry.attributes.position.needsUpdate = true;
+    meshRef.current.rotation.z += 0.0005;
+  });
+
+  return (
+    <points ref={meshRef}>
+      <bufferGeometry>
+        <bufferAttribute attach="attributes-position" count={count} array={positions} itemSize={3} />
+        <bufferAttribute attach="attributes-color" count={count} array={colors} itemSize={3} />
+      </bufferGeometry>
+      <pointsMaterial 
+        size={0.12} 
+        vertexColors 
+        transparent 
+        opacity={0.6} 
+        sizeAttenuation 
+        depthWrite={false}
+        blending={THREE.AdditiveBlending}
+      />
+    </points>
+  );
+}
+
+// --- 3. REACTIVE RINGS ---
+// Expand slightly when mouse moves fast (simulated energy)
+function InteractiveRings() {
+  const groupRef = useRef<THREE.Group>(null);
+  const { pointer } = useThree();
+
+  useFrame(() => {
+    const scrollY = window.scrollY;
+    
+    if (groupRef.current) {
+      // Rotate entire group based on mouse
+      groupRef.current.rotation.x = THREE.MathUtils.lerp(groupRef.current.rotation.x, pointer.y * 0.2, 0.05);
+      groupRef.current.rotation.y = THREE.MathUtils.lerp(groupRef.current.rotation.y, pointer.x * 0.2, 0.05);
+      groupRef.current.position.y = -scrollY * 0.001;
     }
   });
 
   return (
-    <mesh ref={ringRef} rotation={rotation}>
-      <torusGeometry args={[radius, thickness, 16, 100]} />
-      <meshStandardMaterial color={color} transparent opacity={0.6} emissive={color} emissiveIntensity={0.3} />
+    <group ref={groupRef}>
+       <OrbitRing radius={3.5} rotation={[Math.PI / 3, 0, 0]} color="#3b82f6" speed={1} />
+       <OrbitRing radius={4.2} rotation={[Math.PI / 2.5, Math.PI / 4, 0]} color="#ec4899" speed={-0.8} />
+       <OrbitRing radius={5} rotation={[Math.PI / 4, Math.PI / 3, Math.PI / 6]} color="#f97316" speed={0.5} />
+    </group>
+  );
+}
+
+function OrbitRing({ radius, rotation, color, speed = 1 }: any) {
+  const meshRef = useRef<THREE.Mesh>(null);
+  
+  useFrame((state) => {
+    if (meshRef.current) {
+      meshRef.current.rotation.z += 0.002 * speed;
+      // Pulse thickness based on time
+      const scale = 1 + Math.sin(state.clock.elapsedTime * 2) * 0.01;
+      meshRef.current.scale.setScalar(scale);
+    }
+  });
+
+  return (
+    <mesh ref={meshRef} rotation={rotation}>
+      <torusGeometry args={[radius, 0.02, 16, 100]} />
+      <meshStandardMaterial color={color} transparent opacity={0.4} emissive={color} emissiveIntensity={0.5} />
     </mesh>
   );
 }
 
-// Floating sphere with trail effect
-function FloatingSphere({ position, color, size }: { 
-  position: [number, number, number]; 
-  color: string; 
-  size: number;
-}) {
+// --- 4. FLOATING SHAPES (With Trail) ---
+function FloatingShape({ position, color, size, geometry }: any) {
   const meshRef = useRef<THREE.Mesh>(null);
   const { pointer } = useThree();
-  
+  const [hovered, setHover] = useState(false);
+
   useFrame((state) => {
     if (meshRef.current) {
-      meshRef.current.position.x = position[0] + Math.sin(state.clock.elapsedTime * 0.7 + position[0]) * 0.5;
-      meshRef.current.position.y = position[1] + Math.sin(state.clock.elapsedTime * 0.5 + position[1]) * 0.4;
-      meshRef.current.position.z = position[2] + Math.cos(state.clock.elapsedTime * 0.3) * 0.3;
+      // Organic movement
+      const t = state.clock.elapsedTime;
+      meshRef.current.position.y = position[1] + Math.sin(t + position[0]) * 0.5;
+      meshRef.current.rotation.x += 0.01;
+      meshRef.current.rotation.y += 0.01;
+
+      // Mouse influence
+      meshRef.current.position.x += (pointer.x * 0.5 - meshRef.current.position.x + position[0]) * 0.05;
       
-      // React to cursor
-      meshRef.current.position.x += pointer.x * 0.3;
-      meshRef.current.position.y += pointer.y * 0.2;
+      // Hover Scale effect
+      const targetScale = hovered ? 1.5 : 1;
+      meshRef.current.scale.setScalar(THREE.MathUtils.lerp(meshRef.current.scale.x, targetScale, 0.1));
     }
   });
 
   return (
-    <Trail width={2} length={6} color={color} attenuation={(t) => t * t}>
-      <mesh ref={meshRef} position={position}>
-        <sphereGeometry args={[size, 32, 32]} />
-        <meshPhysicalMaterial
-          color={color}
-          metalness={1}
-          roughness={0.05}
-          envMapIntensity={2}
+    <Trail width={1} length={4} color={color} attenuation={(t) => t * t}>
+      <mesh 
+        ref={meshRef} 
+        position={position}
+        onPointerOver={() => setHover(true)}
+        onPointerOut={() => setHover(false)}
+      >
+        {geometry === 'box' && <boxGeometry args={[size, size, size]} />}
+        {geometry === 'oct' && <octahedronGeometry args={[size]} />}
+        {geometry === 'sphere' && <sphereGeometry args={[size, 16, 16]} />}
+        
+        <meshStandardMaterial 
+          color={color} 
           emissive={color}
-          emissiveIntensity={0.3}
+          emissiveIntensity={hovered ? 2 : 0.5} // Glow on hover
+          toneMapped={false}
         />
       </mesh>
     </Trail>
   );
 }
 
-// Enhanced star field
-function StarField({ scrollY }: { scrollY: number }) {
-  const count = 500;
-  const positions = useMemo(() => {
-    const pos = new Float32Array(count * 3);
-    for (let i = 0; i < count; i++) {
-      pos[i * 3] = (Math.random() - 0.5) * 60;
-      pos[i * 3 + 1] = (Math.random() - 0.5) * 60;
-      pos[i * 3 + 2] = (Math.random() - 0.5) * 60;
-    }
-    return pos;
-  }, []);
+function SceneContent() {
+  const { camera } = useThree();
+  const lastScrollY = useRef(0);
 
-  const colors = useMemo(() => {
-    const cols = new Float32Array(count * 3);
-    for (let i = 0; i < count; i++) {
-      const color = new THREE.Color();
-      const rand = Math.random();
-      if (rand < 0.3) {
-        color.setHSL(0.6, 1, 0.8);
-      } else if (rand < 0.5) {
-        color.setHSL(0.85, 1, 0.8);
-      } else if (rand < 0.7) {
-        color.setHSL(0.1, 1, 0.8);
-      } else {
-        color.setHSL(0, 0, 1);
-      }
-      cols[i * 3] = color.r;
-      cols[i * 3 + 1] = color.g;
-      cols[i * 3 + 2] = color.b;
-    }
-    return cols;
-  }, []);
+  useFrame(() => {
+    const currentScroll = window.scrollY;
+    const scrollSpeed = (currentScroll - lastScrollY.current) * 0.05;
+    lastScrollY.current = currentScroll;
 
-  const pointsRef = useRef<THREE.Points>(null);
-  const { pointer } = useThree();
-
-  useFrame((state) => {
-    if (pointsRef.current) {
-      pointsRef.current.rotation.y = state.clock.elapsedTime * 0.015 + pointer.x * 0.1;
-      pointsRef.current.rotation.x = pointer.y * 0.05;
-      pointsRef.current.position.y = -scrollY * 0.003;
+    // Dynamic Camera Shake on Scroll
+    if (Math.abs(scrollSpeed) > 0.5) {
+      const shake = Math.min(Math.abs(scrollSpeed) * 0.01, 0.2);
+      camera.position.x = THREE.MathUtils.lerp(camera.position.x, (Math.random() - 0.5) * shake, 0.1);
     }
   });
 
-  return (
-    <points ref={pointsRef}>
-      <bufferGeometry>
-        <bufferAttribute attach="attributes-position" count={count} array={positions} itemSize={3} />
-        <bufferAttribute attach="attributes-color" count={count} array={colors} itemSize={3} />
-      </bufferGeometry>
-      <pointsMaterial size={0.08} vertexColors sizeAttenuation transparent opacity={0.9} />
-    </points>
-  );
-}
-
-// Floating geometric shapes
-function GeometricShapes({ scrollY }: { scrollY: number }) {
-  const group = useRef<THREE.Group>(null);
-  const { pointer } = useThree();
-  
-  useFrame((state) => {
-    if (group.current) {
-      group.current.rotation.y = state.clock.elapsedTime * 0.05 + pointer.x * 0.3;
-      group.current.rotation.x = pointer.y * 0.2;
-    }
-  });
-
-  return (
-    <group ref={group}>
-      {/* Octahedron */}
-      <Float speed={2} floatIntensity={2}>
-        <mesh position={[-5, 2, -3]}>
-          <octahedronGeometry args={[0.5]} />
-          <meshStandardMaterial color="#3b82f6" wireframe transparent opacity={0.5} />
-        </mesh>
-      </Float>
-      
-      {/* Tetrahedron */}
-      <Float speed={3} floatIntensity={1.5}>
-        <mesh position={[5, -2, -2]}>
-          <tetrahedronGeometry args={[0.4]} />
-          <meshStandardMaterial color="#f97316" wireframe transparent opacity={0.5} />
-        </mesh>
-      </Float>
-      
-      {/* Dodecahedron */}
-      <Float speed={1.5} floatIntensity={2.5}>
-        <mesh position={[0, 4, -4]}>
-          <dodecahedronGeometry args={[0.6]} />
-          <meshStandardMaterial color="#ec4899" wireframe transparent opacity={0.5} />
-        </mesh>
-      </Float>
-    </group>
-  );
-}
-
-function SceneContent({ scrollY }: { scrollY: number }) {
   return (
     <>
       <color attach="background" args={['#030308']} />
-      <ambientLight intensity={0.15} />
+      
+      {/* Dynamic Lighting */}
+      <ambientLight intensity={0.2} />
       <pointLight position={[10, 10, 10]} intensity={2} color="#3b82f6" />
-      <pointLight position={[-10, -5, -10]} intensity={1.5} color="#f97316" />
-      <pointLight position={[0, -10, 5]} intensity={1} color="#ec4899" />
-      <pointLight position={[5, 5, -5]} intensity={0.8} color="#10b981" />
-      <spotLight position={[0, 15, 5]} angle={0.4} penumbra={1} intensity={2} color="#ffffff" />
+      <pointLight position={[-10, -10, -10]} intensity={2} color="#ec4899" />
+      <spotLight position={[0, 15, 0]} angle={0.3} penumbra={1} intensity={2} />
+
+      {/* --- SCENE COMPONENTS --- */}
+      <InteractiveCore />
+      <InteractiveParticles />
+      <InteractiveRings />
       
-      <ReflectiveSphere scrollY={scrollY} />
-      
-      <OrbitRing radius={3.5} rotation={[Math.PI / 3, 0, 0]} color="#3b82f6" thickness={0.02} scrollY={scrollY} speed={1} />
-      <OrbitRing radius={4.2} rotation={[Math.PI / 2.5, Math.PI / 4, 0]} color="#ec4899" thickness={0.015} scrollY={scrollY} speed={-0.8} />
-      <OrbitRing radius={5} rotation={[Math.PI / 4, Math.PI / 3, Math.PI / 6]} color="#f97316" thickness={0.01} scrollY={scrollY} speed={0.5} />
-      
-      <FloatingSphere position={[-4, -2, 2]} color="#ec4899" size={0.35} />
-      <FloatingSphere position={[4, 2.5, -1]} color="#3b82f6" size={0.25} />
-      <FloatingSphere position={[-2.5, 3, 1]} color="#f97316" size={0.2} />
-      <FloatingSphere position={[3, -3, 1]} color="#10b981" size={0.3} />
-      <FloatingSphere position={[-5, 1, -2]} color="#ec4899" size={0.4} />
-      
-      <GeometricShapes scrollY={scrollY} />
-      <StarField scrollY={scrollY} />
-      
-      <Sparkles count={100} scale={15} size={2} speed={0.3} color="#3b82f6" />
-      
-      <Environment preset="night" />
-      <fog attach="fog" args={['#030308', 8, 35]} />
+      <FloatingShape position={[-4, 2, 0]} color="#ec4899" size={0.5} geometry="oct" />
+      <FloatingShape position={[4, -1, 2]} color="#3b82f6" size={0.4} geometry="box" />
+      <FloatingShape position={[0, -5, -2]} color="#f97316" size={0.6} geometry="sphere" />
+
+      <Sparkles count={50} scale={12} size={4} speed={0.4} opacity={0.5} color="#ffffff" />
+      <Environment preset="city" />
+      <fog attach="fog" args={['#030308', 5, 40]} />
     </>
   );
 }
 
 export default function Scene3D() {
-  const [scrollY, setScrollY] = useState(0);
-
-  useEffect(() => {
-    const handleScroll = () => setScrollY(window.scrollY);
-    const handleMouse = (e: MouseEvent) => {
-      mouseX = (e.clientX / window.innerWidth) * 2 - 1;
-      mouseY = -(e.clientY / window.innerHeight) * 2 + 1;
-    };
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    window.addEventListener('mousemove', handleMouse, { passive: true });
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-      window.removeEventListener('mousemove', handleMouse);
-    };
-  }, []);
-
   return (
-    <div className="fixed inset-0 -z-10 h-screen">
-      <Canvas camera={{ position: [0, 0, 10], fov: 55 }} dpr={[1, 2]}>
-        <SceneContent scrollY={scrollY} />
+    <div className="fixed inset-0 -z-10 w-full h-full">
+      <Canvas 
+        camera={{ position: [0, 0, 10], fov: 50 }} 
+        dpr={[1, 1.5]}
+        gl={{ antialias: true, alpha: false, powerPreference: "high-performance" }}
+      >
+        <SceneContent />
       </Canvas>
     </div>
   );

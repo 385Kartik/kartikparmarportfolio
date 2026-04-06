@@ -1,255 +1,288 @@
-import { motion, AnimatePresence } from 'framer-motion';
-import { useState } from 'react';
-import { ArrowUpRight, ExternalLink, Github } from 'lucide-react';
+import { motion, useScroll, useTransform, useMotionTemplate, useMotionValue, AnimatePresence } from 'framer-motion';
+import { useRef, useState, MouseEvent } from 'react';
+import { ArrowRight, Layers, Cpu } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import MagneticButton from './MagneticButton';
+import InteractiveText from './InteractiveText';
+import { projectsData } from '../data/projectsData';
 
-const projects = [
-  {
-    id: 1,
-    title: 'NEXUS PLATFORM',
-    category: 'Web Development',
-    year: '2024',
-    description: 'A revolutionary SaaS platform with real-time collaboration features and AI-powered analytics.',
-    tech: ['React', 'Node.js', 'PostgreSQL', 'WebSocket'],
-    color: '#3b82f6',
-    image: '🌐',
-  },
-  {
-    id: 2,
-    title: 'QUANTUM APP',
-    category: 'Mobile Experience',
-    year: '2024',
-    description: 'Cross-platform mobile app with gesture-based navigation and offline-first architecture.',
-    tech: ['React Native', 'TypeScript', 'GraphQL'],
-    color: '#f97316',
-    image: '📱',
-  },
-  {
-    id: 3,
-    title: 'NEURAL DASHBOARD',
-    category: 'AI Integration',
-    year: '2023',
-    description: 'Real-time machine learning dashboard for monitoring and visualizing AI model performance.',
-    tech: ['Python', 'TensorFlow', 'D3.js', 'FastAPI'],
-    color: '#ec4899',
-    image: '🧠',
-  },
-  {
-    id: 4,
-    title: 'PRISMA DESIGN',
-    category: 'Brand Identity',
-    year: '2023',
-    description: 'Complete brand overhaul with 3D motion graphics and immersive web experience.',
-    tech: ['Three.js', 'GSAP', 'Figma', 'Blender'],
-    color: '#10b981',
-    image: '💎',
-  },
-  {
-    id: 5,
-    title: 'VERTEX ENGINE',
-    category: '3D Experience',
-    year: '2023',
-    description: 'WebGL-powered 3D product configurator with real-time rendering and AR preview.',
-    tech: ['Three.js', 'React', 'WebXR', 'Blender'],
-    color: '#8b5cf6',
-    image: '🎮',
-  },
-];
+// --- LEFT PANEL: 3D PREVIEW CARD ---
+function PreviewCard({
+  activeProject,
+  mouseX,
+  mouseY,
+}: {
+  activeProject: (typeof projectsData)[0];
+  mouseX: ReturnType<typeof useMotionValue<number>>;
+  mouseY: ReturnType<typeof useMotionValue<number>>;
+}) {
+  const x = useMotionValue(0);
+  const y = useMotionValue(0);
+  const rotateX = useTransform(y, [-100, 100], [10, -10]);
+  const rotateY = useTransform(x, [-100, 100], [-10, 10]);
 
-export default function ProjectsSection() {
-  const [hoveredId, setHoveredId] = useState<number | null>(null);
-  const [selectedProject, setSelectedProject] = useState<typeof projects[0] | null>(null);
+  function handleMouseMove(e: MouseEvent<HTMLDivElement>) {
+    const rect = e.currentTarget.getBoundingClientRect();
+    x.set((e.clientX - rect.left - rect.width / 2));
+    y.set((e.clientY - rect.top - rect.height / 2));
+  }
 
   return (
-    <section id="projects" className="relative py-32 bg-background">
-      <div className="max-w-7xl mx-auto px-6">
-        {/* Section header */}
+    <motion.div
+      onMouseMove={handleMouseMove}
+      onMouseLeave={() => { x.set(0); y.set(0); }}
+      style={{ rotateX, rotateY, transformStyle: 'preserve-3d' }}
+      className="relative w-full min-h-[480px] max-h-[80vh] rounded-3xl bg-[#0a0a0a] border border-white/10 overflow-hidden group"
+    >
+      <AnimatePresence mode="wait">
         <motion.div
-          initial={{ opacity: 0, y: 50 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          viewport={{ once: true }}
-          className="mb-20"
+          key={activeProject.id}
+          initial={{ opacity: 0, scale: 1.08 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.5 }}
+          className="absolute inset-0"
         >
-          <span className="text-primary text-sm tracking-[0.3em] mb-4 block">
-            SELECTED WORK
-          </span>
-          <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-8">
-            <h2 className="text-6xl md:text-8xl font-display leading-none">
-              FEATURED
-              <br />
-              <span className="text-outline italic">PROJECTS</span>
-            </h2>
-            <p className="text-muted-foreground max-w-md">
-              A curated selection of projects that showcase my expertise in creating digital experiences that leave lasting impressions.
-            </p>
-          </div>
+          <img
+            src={activeProject.image}
+            alt={activeProject.title}
+            className="w-full h-full object-cover opacity-50 group-hover:grayscale-0 transition-all duration-700"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-[#0a0a0a]/50 to-transparent" />
         </motion.div>
+      </AnimatePresence>
 
-        {/* Projects list */}
-        <div className="space-y-0">
-          {projects.map((project, index) => (
-            <motion.div
-              key={project.id}
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 1 }}
-              transition={{ duration: 0.6, delay: index * 0.1 }}
-              viewport={{ once: true }}
-              onMouseEnter={() => setHoveredId(project.id)}
-              onMouseLeave={() => setHoveredId(null)}
-              onClick={() => setSelectedProject(project)}
-              className="group block border-t border-border py-10 relative overflow-hidden cursor-pointer"
-            >
-              {/* Background hover effect */}
-              <motion.div
-                className="absolute inset-0"
-                style={{ background: `linear-gradient(90deg, ${project.color}05, transparent)` }}
-                initial={{ x: '-100%' }}
-                animate={{ x: hoveredId === project.id ? '0%' : '-100%' }}
-                transition={{ duration: 0.4 }}
-              />
+      {/* Radial mouse-follow glow */}
+      <motion.div
+        className="pointer-events-none absolute -inset-px opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20"
+        style={{
+          background: useMotionTemplate`radial-gradient(600px circle at ${mouseX}px ${mouseY}px, ${activeProject.color}15, transparent 80%)`,
+        }}
+      />
 
-              <div className="flex items-center justify-between relative z-10">
-                <div className="flex items-center gap-8">
-                  {/* Project number */}
-                  <motion.span 
-                    className="text-muted-foreground text-sm w-8 font-mono"
-                    animate={{ 
-                      color: hoveredId === project.id ? project.color : 'hsl(var(--muted-foreground))'
-                    }}
-                  >
-                    0{project.id}
-                  </motion.span>
-                  
-                  {/* Project title */}
-                  <div>
-                    <motion.h3 
-                      className="text-4xl md:text-6xl font-display transition-colors"
-                      animate={{
-                        color: hoveredId === project.id ? project.color : 'hsl(var(--foreground))',
-                        x: hoveredId === project.id ? 20 : 0
-                      }}
-                      transition={{ duration: 0.3 }}
-                    >
-                      {project.title}
-                    </motion.h3>
-                    
-                    {/* Tech stack on hover */}
-                    <motion.div
-                      className="flex gap-2 mt-2"
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ 
-                        opacity: hoveredId === project.id ? 1 : 0,
-                        y: hoveredId === project.id ? 0 : 10
-                      }}
-                    >
-                      {project.tech.slice(0, 3).map((t) => (
-                        <span key={t} className="text-xs px-2 py-1 rounded bg-muted text-muted-foreground">
-                          {t}
-                        </span>
-                      ))}
-                    </motion.div>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-8">
-                  {/* Category */}
-                  <span className="hidden md:block text-muted-foreground">
-                    {project.category}
-                  </span>
-                  
-                  {/* Year */}
-                  <span className="text-muted-foreground font-mono">
-                    {project.year}
-                  </span>
-                  
-                  {/* Arrow */}
-                  <motion.div
-                    animate={{ 
-                      x: hoveredId === project.id ? 0 : -10,
-                      opacity: hoveredId === project.id ? 1 : 0,
-                      rotate: hoveredId === project.id ? 0 : -45
-                    }}
-                    transition={{ duration: 0.3 }}
-                    style={{ color: project.color }}
-                  >
-                    <ArrowUpRight className="w-8 h-8" />
-                  </motion.div>
-                </div>
-              </div>
-
-              {/* Hover image preview */}
-              <motion.div
-                className="absolute right-40 top-1/2 -translate-y-1/2 text-9xl pointer-events-none"
-                initial={{ opacity: 0, scale: 0.5, rotate: -20 }}
-                animate={{ 
-                  opacity: hoveredId === project.id ? 1 : 0,
-                  scale: hoveredId === project.id ? 1 : 0.5,
-                  rotate: hoveredId === project.id ? 0 : -20,
-                }}
-                transition={{ type: 'spring', stiffness: 200 }}
-              >
-                {project.image}
-              </motion.div>
-            </motion.div>
-          ))}
+      {/* Floating content */}
+      <div className="absolute inset-0 p-8 flex flex-col justify-between z-30 pointer-events-none" style={{ transform: 'translateZ(20px)' }}>
+        <div className="flex justify-between items-start">
+          <div className="p-2 bg-white/5 backdrop-blur-md rounded-lg border border-white/10">
+            <Layers className="w-6 h-6" style={{ color: activeProject.color }} />
+          </div>
+          <div className="flex flex-col items-end gap-1">
+            <span className="font-mono text-xs bg-white/5 px-2 py-1 rounded" style={{ color: activeProject.color }}>
+              {activeProject.type.toUpperCase()}
+            </span>
+            <span className="font-mono text-[10px] text-white/30">{activeProject.year}</span>
+          </div>
         </div>
 
-        {/* View all button */}
+        {/* Stats row */}
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          viewport={{ once: true }}
-          className="mt-16 text-center"
+          key={activeProject.id}
+          initial={{ y: 10, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.15 }}
+          className="grid grid-cols-2 gap-2"
         >
-          <MagneticButton href="#" className="btn-outline inline-flex items-center gap-3">
-            VIEW ALL PROJECTS
-            <ArrowUpRight className="w-5 h-5" />
-          </MagneticButton>
+          {activeProject.stats.slice(0, 2).map(stat => (
+            <div key={stat.label} className="bg-black/40 backdrop-blur-md rounded-2xl px-3 py-2 border border-white/5">
+              <div className="font-display text-lg font-bold" style={{ color: activeProject.color }}>{stat.value}</div>
+              <div className="text-[10px] text-white/40 tracking-wider uppercase">{stat.label}</div>
+            </div>
+          ))}
         </motion.div>
+
+        <div>
+          <motion.div
+            key={activeProject.id + '-title'}
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.1 }}
+          >
+            <h3 className="text-4xl font-display text-white mb-2">{activeProject.title}</h3>
+            <div className="flex items-center gap-2 text-xs font-bold tracking-widest text-zinc-400 uppercase">
+              <Cpu className="w-4 h-4 shrink-0" />
+              <span className="truncate">{activeProject.tech}</span>
+            </div>
+          </motion.div>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
+export default function ProjectsSection() {
+  const containerRef = useRef<HTMLElement>(null);
+  const [activeProject, setActiveProject] = useState(projectsData[0]);
+
+  const { scrollYProgress } = useScroll({ target: containerRef, offset: ['start end', 'end start'] });
+  const lineHeight = useTransform(scrollYProgress, [0.1, 0.9], ['0%', '100%']);
+
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+
+  function handleMouseMove({ currentTarget, clientX, clientY }: MouseEvent) {
+    const { left, top } = currentTarget.getBoundingClientRect();
+    mouseX.set(clientX - left);
+    mouseY.set(clientY - top);
+  }
+
+  return (
+    <section
+      ref={containerRef}
+      id="projects"
+      className="relative py-32 bg-[#030303] overflow-x-clip min-h-screen"
+      onMouseMove={handleMouseMove}
+    >
+      {/* Reactive Background */}
+      <div className="absolute inset-0 pointer-events-none">
+        <motion.div
+          className="absolute -top-[20%] -left-[10%] w-[70vw] h-[70vw] rounded-full blur-[120px] opacity-20"
+          animate={{ backgroundColor: activeProject.color }}
+          transition={{ duration: 1 }}
+        />
+        <motion.div
+          className="absolute -bottom-[20%] -right-[10%] w-[60vw] h-[60vw] rounded-full blur-[120px] opacity-15"
+          animate={{ backgroundColor: activeProject.color }}
+          transition={{ duration: 1.5 }}
+        />
+        <motion.div
+          className="absolute top-1/4 left-1/4 w-32 h-32 rounded-full blur-xl opacity-40"
+          animate={{ backgroundColor: activeProject.color, y: [0, -30, 0], x: [0, 20, 0], scale: [1, 1.2, 1] }}
+          transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
+        />
+        <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'url("https://grainy-gradients.vercel.app/noise.svg")' }} />
+        <div
+          className="absolute inset-0 opacity-[0.05]"
+          style={{
+            backgroundImage: 'linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)',
+            backgroundSize: '50px 50px',
+          }}
+        />
       </div>
 
-      {/* Project Modal */}
-      <AnimatePresence>
-        {selectedProject && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-background/90 backdrop-blur-lg"
-            onClick={() => setSelectedProject(null)}
-          >
-            <motion.div
-              initial={{ scale: 0.9, y: 50 }}
-              animate={{ scale: 1, y: 0 }}
-              exit={{ scale: 0.9, y: 50 }}
-              className="bg-card border border-border rounded-3xl p-8 max-w-2xl w-full"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="text-8xl mb-6">{selectedProject.image}</div>
-              <h3 className="text-4xl font-display mb-2" style={{ color: selectedProject.color }}>
-                {selectedProject.title}
-              </h3>
-              <p className="text-muted-foreground mb-4">{selectedProject.category} • {selectedProject.year}</p>
-              <p className="text-foreground/80 mb-6">{selectedProject.description}</p>
-              <div className="flex flex-wrap gap-2 mb-8">
-                {selectedProject.tech.map((t) => (
-                  <span key={t} className="text-sm px-3 py-1 rounded-full bg-muted">{t}</span>
-                ))}
-              </div>
-              <div className="flex gap-4">
-                <MagneticButton className="btn-primary inline-flex items-center gap-2">
-                  <ExternalLink className="w-4 h-4" /> Live Demo
-                </MagneticButton>
-                <MagneticButton className="btn-outline inline-flex items-center gap-2">
-                  <Github className="w-4 h-4" /> Source Code
-                </MagneticButton>
-              </div>
+      <div className="max-w-7xl mx-auto px-6 relative z-10">
+        <div className="grid lg:grid-cols-[1.2fr,0.8fr] gap-16">
+
+          {/* LEFT: Sticky Preview */}
+          <div className="hidden lg:block">
+            <div className="sticky top-32">
+              <motion.div initial={{ opacity: 0, x: -50 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.8 }}>
+                <span className="text-xs font-bold tracking-[0.4em] uppercase mb-8 block ml-1 transition-colors duration-500" style={{ color: activeProject.color }}>
+                  Archive Viewer
+                </span>
+                <PreviewCard activeProject={activeProject} mouseX={mouseX} mouseY={mouseY} />
+              </motion.div>
+            </div>
+          </div>
+
+          {/* RIGHT: Timeline */}
+          <div className="relative pt-8">
+            <motion.div initial={{ opacity: 0, y: 50 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mb-16">
+              <h2 className="text-6xl md:text-8xl font-display leading-[0.85] mb-8 text-white">
+                SELECTED
+                <br />
+                <InteractiveText
+                  text="WORKS"
+                  className="transition-colors duration-500"
+                  style={{ color: activeProject.color }}
+                />
+              </h2>
             </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+
+            <div className="relative border-l border-white/10 pl-12 md:pl-16 space-y-24">
+              {/* Animated scroll line */}
+              <motion.div
+                className="absolute left-0 top-0 w-[2px] shadow-[0_0_15px_currentColor]"
+                style={{ height: lineHeight, backgroundColor: activeProject.color, color: activeProject.color }}
+              />
+
+              {projectsData.map((project, index) => {
+                const isActive = activeProject.id === project.id;
+                return (
+                  <motion.div
+                    key={project.id}
+                    id={`project-${project.id}`}
+                    initial={{ opacity: 0, x: 50 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    viewport={{ once: true, margin: '-100px' }}
+                    transition={{ duration: 0.6, delay: index * 0.08 }}
+                    className="relative group"
+                    onMouseEnter={() => setActiveProject(project)}
+                  >
+                    {/* Timeline dot */}
+                    <div
+                      className="absolute -left-[55px] md:-left-[71px] top-0 w-3 h-3 md:w-4 md:h-4 rounded-full bg-[#030303] border-2 transition-all duration-300 z-10 group-hover:scale-125"
+                      style={{ borderColor: isActive ? project.color : 'rgba(255,255,255,0.2)' }}
+                    >
+                      <div
+                        className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 group-hover:animate-ping"
+                        style={{ backgroundColor: project.color }}
+                      />
+                    </div>
+
+                    <div className="flex flex-col gap-4">
+                      <div className="flex items-center gap-4">
+                        <span className="text-5xl font-display text-white/5 font-bold group-hover:text-white/20 transition-colors">
+                          {project.id}
+                        </span>
+                        <div className="flex flex-col">
+                          <span
+                            className="text-xs font-bold tracking-[0.2em] uppercase transition-colors duration-300"
+                            style={{ color: isActive ? project.color : 'rgb(113,113,122)' }}
+                          >
+                            {project.category}
+                          </span>
+                          <span className="text-[10px] text-white/20 font-mono">{project.year}</span>
+                        </div>
+                      </div>
+
+                      <div>
+                        <h3
+                          className="text-3xl md:text-4xl font-display mb-3 transition-colors duration-300"
+                          style={{ color: isActive ? project.color : 'white' }}
+                        >
+                          {project.title}
+                        </h3>
+                        <p className="text-zinc-400 leading-relaxed max-w-md mb-4 group-hover:text-white/70 transition-colors text-sm md:text-base">
+                          {project.shortDesc}
+                        </p>
+
+                        {/* Mobile image */}
+                        <div className="lg:hidden w-full h-80 rounded-2xl overflow-hidden mb-4 border border-white/10">
+                          <img src={project.image} alt={project.title} className="w-full h-full object-cover object-center" />
+                        </div>
+
+                        {/* Mini stat pills */}
+                        <div className="flex flex-wrap gap-2 mb-5">
+                          {project.stats.map(stat => (
+                            <span
+                              key={stat.label}
+                              className="text-[10px] font-mono px-2 py-1 rounded-full border"
+                              style={{
+                                color: project.color,
+                                borderColor: project.color + '40',
+                                backgroundColor: project.color + '10',
+                              }}
+                            >
+                              {stat.value} {stat.label}
+                            </span>
+                          ))}
+                        </div>
+
+                        <Link to={`/project/${project.id}`}>
+                          <MagneticButton className="px-6 py-3 rounded-full bg-white/5 border border-white/10 text-white hover:bg-white/10 hover:border-white/30 transition-all text-xs font-bold tracking-widest flex items-center gap-2 group/btn">
+                            VIEW CASE STUDY
+                            <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
+                          </MagneticButton>
+                        </Link>
+                      </div>
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      </div>
     </section>
   );
 }

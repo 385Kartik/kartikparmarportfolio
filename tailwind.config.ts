@@ -2,7 +2,12 @@ import type { Config } from "tailwindcss";
 
 export default {
   darkMode: ["class"],
-  content: ["./pages/**/*.{ts,tsx}", "./components/**/*.{ts,tsx}", "./app/**/*.{ts,tsx}", "./src/**/*.{ts,tsx}"],
+  content: [
+    "./pages/**/*.{ts,tsx}",
+    "./components/**/*.{ts,tsx}",
+    "./app/**/*.{ts,tsx}",
+    "./src/**/*.{ts,tsx}",
+  ],
   prefix: "",
   theme: {
     container: {
@@ -14,8 +19,8 @@ export default {
     },
     extend: {
       fontFamily: {
-        display: ['Bebas Neue', 'sans-serif'],
-        body: ['Inter', 'sans-serif'],
+        display: ["Bebas Neue", "sans-serif"],
+        body: ["Inter", "sans-serif"],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -58,7 +63,7 @@ export default {
         sm: "calc(var(--radius) - 4px)",
       },
       keyframes: {
-        "float": {
+        float: {
           "0%, 100%": { transform: "translateY(0)" },
           "50%": { transform: "translateY(-20px)" },
         },
@@ -78,18 +83,25 @@ export default {
           "0%": { transform: "scale(0.9)", opacity: "0" },
           "100%": { transform: "scale(1)", opacity: "1" },
         },
-        "orbit": {
+        orbit: {
           "0%": { transform: "rotate(0deg) translateX(150px) rotate(0deg)" },
-          "100%": { transform: "rotate(360deg) translateX(150px) rotate(-360deg)" },
+          "100%": {
+            transform: "rotate(360deg) translateX(150px) rotate(-360deg)",
+          },
+        },
+        "scrolling-text": {
+          "0%": { transform: "translateX(100%)" },
+          "100%": { transform: "translateX(-100%)" },
         },
       },
       animation: {
-        "float": "float 6s ease-in-out infinite",
+        float: "float 6s ease-in-out infinite",
         "spin-slow": "spin-slow 20s linear infinite",
         "pulse-glow": "pulse-glow 3s ease-in-out infinite",
         "slide-up": "slide-up 0.8s ease-out",
         "scale-in": "scale-in 0.6s ease-out",
-        "orbit": "orbit 15s linear infinite",
+        orbit: "orbit 15s linear infinite",
+        "scrolling-text": "scrolling-text 20s linear infinite",
       },
     },
   },

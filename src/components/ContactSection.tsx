@@ -1,210 +1,324 @@
-import { motion } from 'framer-motion';
-import { ArrowRight, Mail, MapPin, Phone, Send } from 'lucide-react';
-import { useState } from 'react';
+import { motion, useMotionTemplate, useMotionValue } from 'framer-motion';
+import { useRef, useState, MouseEvent } from 'react';
+import { ArrowRight, Mail, MapPin, Phone, Send, Terminal, Copy, Check, Linkedin, Github, Globe } from 'lucide-react';
 import MagneticButton from './MagneticButton';
 
 const socials = [
-  { name: 'Twitter', handle: '@creative_dev', url: '#' },
-  { name: 'LinkedIn', handle: '/in/creativedev', url: '#' },
-  { name: 'Dribbble', handle: '@creativedev', url: '#' },
-  { name: 'GitHub', handle: '@creativedev', url: '#' },
+  { name: 'LinkedIn', handle: '/in/parmarkartik385', url: 'https://www.linkedin.com/in/parmarkartik385/', icon: Linkedin, color: '#0284c7' },
+  { name: 'GitHub', handle: '@385Kartik', url: 'https://github.com/385Kartik', icon: Github, color: '#ffffff' },
+  { name: 'Portfolio', handle: 'kartik.dev', url: 'https://my-portfolio-f96fe.firebaseapp.com/', icon: Globe, color: '#3b82f6' },
 ];
 
+function SocialCard({ social }: { social: any }) {
+  return (
+    <motion.a
+      href={social.url}
+      target="_blank"
+      rel="noopener noreferrer"
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      className="relative group p-6 rounded-2xl bg-[#0a0a0a] border border-white/10 overflow-hidden hover:border-white/30 transition-all duration-500"
+    >
+      <div className="absolute inset-0 opacity-0 group-hover:opacity-10 transition-opacity duration-500 rounded-2xl" style={{ backgroundColor: social.color }} />
+      
+      {/* Scanline */}
+      <div className="absolute top-0 left-0 w-full h-[1px] bg-white/20 opacity-0 group-hover:opacity-100 group-hover:top-[100%] transition-all duration-1000" />
+      
+      <div className="relative z-10 flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <div className="p-3 rounded-2xl bg-white/5 group-hover:bg-white/10 transition-colors">
+            <social.icon className="w-5 h-5 transition-colors duration-300" style={{ color: social.color }} />
+          </div>
+          <div>
+            <h4 className="font-display text-lg text-white group-hover:translate-x-1 transition-transform">{social.name}</h4>
+            <p className="text-xs font-mono text-zinc-500">{social.handle}</p>
+          </div>
+        </div>
+        <ArrowRight className="w-4 h-4 -rotate-45 text-zinc-600 group-hover:text-white group-hover:rotate-0 transition-all duration-300" />
+      </div>
+    </motion.a>
+  );
+}
+
 export default function ContactSection() {
+  const containerRef = useRef<HTMLElement>(null);
   const [formData, setFormData] = useState({ name: '', email: '', message: '' });
-  const [isHovered, setIsHovered] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [statusMessage, setStatusMessage] = useState('');
+
+  // Mouse Physics
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+
+  function handleMouseMove({ currentTarget, clientX, clientY }: MouseEvent) {
+    const { left, top } = currentTarget.getBoundingClientRect();
+    mouseX.set(clientX - left);
+    mouseY.set(clientY - top);
+  }
+
+  const copyEmail = () => {
+    navigator.clipboard.writeText('385.kartik.p@gmail.com');
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setStatus('loading');
+    setStatusMessage('');
+
+    try {
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        setStatus('success');
+        setStatusMessage('Message sent successfully! I\'ll get back to you soon.');
+        setFormData({ name: '', email: '', message: '' });
+        setTimeout(() => { setStatus('idle'); setStatusMessage(''); }, 5000);
+      } else {
+        setStatus('error');
+        setStatusMessage(data.error || 'Something went wrong. Please try again.');
+        setTimeout(() => { setStatus('idle'); setStatusMessage(''); }, 5000);
+      }
+    } catch {
+      setStatus('error');
+      setStatusMessage('Network error. Please try again later.');
+      setTimeout(() => { setStatus('idle'); setStatusMessage(''); }, 5000);
+    }
+  };
 
   return (
-    <section id="contact" className="relative py-32 overflow-hidden bg-background">
-      {/* Background decoration */}
+    <section 
+      ref={containerRef}
+      id="contact" 
+      className="relative py-32 bg-[#020202] overflow-hidden min-h-screen"
+      onMouseMove={handleMouseMove}
+    >
+      {/* --- BACKGROUND (Dark Grid + Spotlight) --- */}
       <div className="absolute inset-0 pointer-events-none">
-        <motion.div 
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full opacity-10"
-          style={{ background: 'radial-gradient(circle, hsl(var(--primary)), transparent 60%)' }}
-          animate={{ scale: [1, 1.1, 1] }}
-          transition={{ duration: 8, repeat: Infinity }}
+        <div 
+          className="absolute inset-0 opacity-[0.05]"
+          style={{ 
+            backgroundImage: 'linear-gradient(#ffffff 1px, transparent 1px), linear-gradient(90deg, #ffffff 1px, transparent 1px)',
+            backgroundSize: '40px 40px'
+          }} 
         />
+        <motion.div 
+          className="absolute inset-0 opacity-10"
+          style={{ 
+            background: useMotionTemplate`
+              radial-gradient(
+                600px circle at ${mouseX}px ${mouseY}px,
+                rgba(59, 130, 246, 0.5),
+                transparent 80%
+              )
+            `,
+          }}
+        />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,#020202_100%)]" />
       </div>
 
-      <div className="max-w-7xl mx-auto px-6">
-        {/* Section header */}
+      <div className="max-w-7xl mx-auto px-6 relative z-10">
+        
+        {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 50 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
           viewport={{ once: true }}
-          className="text-center mb-20"
+          className="text-center mb-32"
         >
-          <span className="text-primary text-sm tracking-[0.3em] mb-4 block">
-            LET'S CONNECT
-          </span>
-          <h2 className="text-6xl md:text-9xl font-display leading-none mb-4">
-            GOT A
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-blue-500/30 bg-blue-500/10 mb-6">
+            <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
+            <span className="text-[10px] font-bold tracking-[0.2em] text-blue-400 uppercase">System Status: Online</span>
+          </div>
+          
+          <h2 className="text-7xl md:text-[10vw] font-display leading-[0.8] text-white">
+            READY TO
             <br />
-            <span className="text-primary italic">PROJECT?</span>
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-500 via-purple-500 to-blue-500 animate-gradient-x">
+              COLLABORATE?
+            </span>
           </h2>
-          <p className="text-muted-foreground text-xl max-w-xl mx-auto">
-            I'm currently accepting new projects for Q1 2025.
-            Let's build something extraordinary together.
-          </p>
         </motion.div>
 
-        {/* Content grid */}
-        <div className="grid lg:grid-cols-2 gap-16">
-          {/* Contact form */}
+        <div className="grid lg:grid-cols-2 gap-20">
+          
+          {/* LEFT: Terminal Form */}
           <motion.div
             initial={{ opacity: 0, x: -50 }}
             whileInView={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8 }}
             viewport={{ once: true }}
+            className="relative"
           >
-            <form className="space-y-6">
-              <div>
-                <label className="text-sm tracking-wider text-muted-foreground block mb-2">YOUR NAME</label>
+            {/* Terminal Window Decor */}
+            <div className="absolute -top-12 left-0 text-xs font-mono text-zinc-600 flex gap-4">
+               <span>root@portfolio:~/contact-form</span>
+               <span className="animate-pulse">_</span>
+            </div>
+
+            <form onSubmit={handleSubmit} className="space-y-12">
+              <div className="relative group">
                 <input
                   type="text"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full bg-transparent border-b border-border py-4 text-xl focus:outline-none focus:border-primary transition-colors"
-                  placeholder="John Doe"
+                  required
+                  className="w-full bg-transparent border-b border-white/10 py-4 text-2xl md:text-4xl text-white font-display focus:outline-none focus:border-blue-500 transition-colors placeholder:text-white/10 rounded-none"
+                  placeholder="ENTER NAME"
                 />
+                <span className="absolute -bottom-6 left-0 text-[10px] font-mono text-blue-500 opacity-0 group-focus-within:opacity-100 transition-opacity">
+                  // IDENTITY_DETECTED
+                </span>
               </div>
-              <div>
-                <label className="text-sm tracking-wider text-muted-foreground block mb-2">EMAIL ADDRESS</label>
+
+              <div className="relative group">
                 <input
                   type="email"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="w-full bg-transparent border-b border-border py-4 text-xl focus:outline-none focus:border-primary transition-colors"
-                  placeholder="john@example.com"
+                  required
+                  className="w-full bg-transparent border-b border-white/10 py-4 text-2xl md:text-4xl text-white font-display focus:outline-none focus:border-blue-500 transition-colors placeholder:text-white/10 rounded-none"
+                  placeholder="ENTER EMAIL"
                 />
+                <span className="absolute -bottom-6 left-0 text-[10px] font-mono text-blue-500 opacity-0 group-focus-within:opacity-100 transition-opacity">
+                  // COMMS_LINK_ESTABLISHED
+                </span>
               </div>
-              <div>
-                <label className="text-sm tracking-wider text-muted-foreground block mb-2">YOUR MESSAGE</label>
+
+              <div className="relative group">
                 <textarea
                   value={formData.message}
                   onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                  required
                   rows={4}
-                  className="w-full bg-transparent border-b border-border py-4 text-xl focus:outline-none focus:border-primary transition-colors resize-none"
-                  placeholder="Tell me about your project..."
+                  className="w-full bg-transparent border-b border-white/10 py-4 text-xl md:text-2xl text-white font-display focus:outline-none focus:border-blue-500 transition-colors resize-none placeholder:text-white/10 rounded-none"
+                  placeholder="TRANSMISSION DATA..."
                 />
               </div>
-              <MagneticButton className="btn-primary inline-flex items-center gap-3 mt-8">
-                <Send className="w-5 h-5" />
-                Send Message
-                <ArrowRight className="w-5 h-5" />
+
+              {/* Status Message */}
+              {statusMessage && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className={`text-sm font-mono px-4 py-3 rounded-2xl border ${
+                    status === 'success' 
+                      ? 'text-green-400 bg-green-500/10 border-green-500/30' 
+                      : 'text-red-400 bg-red-500/10 border-red-500/30'
+                  }`}
+                >
+                  {status === 'success' ? '✓ ' : '✗ '}{statusMessage}
+                </motion.div>
+              )}
+
+              <MagneticButton 
+                onClick={() => {
+                  const form = document.querySelector('form');
+                  if (form) form.requestSubmit();
+                }}
+                className={`w-full py-6 font-bold tracking-widest text-sm transition-all duration-500 uppercase flex items-center justify-center gap-4 group rounded-2xl ${
+                  status === 'loading' 
+                    ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30 cursor-wait' 
+                    : status === 'success'
+                    ? 'bg-green-500/20 text-green-400 border border-green-500/30'
+                    : 'bg-white text-black hover:bg-blue-500 hover:text-white'
+                }`}
+              >
+                <span>
+                  {status === 'loading' ? 'Transmitting...' : status === 'success' ? 'Transmission Complete' : 'Initialize Transmission'}
+                </span>
+                {status === 'loading' ? (
+                  <motion.div 
+                    className="w-4 h-4 border-2 border-blue-400 border-t-transparent rounded-full"
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                  />
+                ) : status === 'success' ? (
+                  <Check className="w-4 h-4" />
+                ) : (
+                  <Send className="w-4 h-4 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+                )}
               </MagneticButton>
             </form>
           </motion.div>
 
-          {/* Contact info */}
-          <motion.div
-            initial={{ opacity: 0, x: 50 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8 }}
-            viewport={{ once: true }}
-            className="space-y-12"
-          >
-            {/* Quick contact */}
-            <div className="space-y-6">
-              <h3 className="text-2xl font-display mb-6">QUICK CONTACT</h3>
-              {[
-                { icon: Mail, label: 'Email', value: 'hello@creativedev.io' },
-                { icon: Phone, label: 'Phone', value: '+1 (555) 123-4567' },
-                { icon: MapPin, label: 'Location', value: 'New York, NY' },
-              ].map((item) => (
-                <motion.div 
-                  key={item.label}
-                  className="flex items-center gap-4 group cursor-pointer"
-                  whileHover={{ x: 10 }}
-                >
-                  <div className="w-12 h-12 rounded-xl bg-muted flex items-center justify-center group-hover:bg-primary/20 transition-colors">
-                    <item.icon className="w-5 h-5 text-primary" />
-                  </div>
-                  <div>
-                    <span className="text-xs text-muted-foreground">{item.label}</span>
-                    <p className="text-foreground group-hover:text-primary transition-colors">{item.value}</p>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-
-            {/* Social links */}
-            <div>
-              <h3 className="text-2xl font-display mb-6">FOLLOW ME</h3>
-              <div className="grid grid-cols-2 gap-4">
-                {socials.map((social, i) => (
-                  <motion.a
-                    key={social.name}
-                    href={social.url}
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    transition={{ delay: i * 0.1 }}
-                    whileHover={{ scale: 1.02, backgroundColor: 'hsl(var(--primary) / 0.1)' }}
-                    className="p-4 rounded-xl border border-border hover:border-primary transition-all"
-                  >
-                    <span className="font-display text-lg">{social.name}</span>
-                    <p className="text-sm text-muted-foreground">{social.handle}</p>
-                  </motion.a>
-                ))}
-              </div>
-            </div>
-
-            {/* Availability badge */}
-            <motion.div
-              className="p-6 rounded-2xl bg-gradient-to-br from-primary/20 to-secondary/10 border border-primary/20"
-              animate={{ boxShadow: ['0 0 20px rgba(59, 130, 246, 0.1)', '0 0 40px rgba(59, 130, 246, 0.2)', '0 0 20px rgba(59, 130, 246, 0.1)'] }}
-              transition={{ duration: 2, repeat: Infinity }}
-            >
-              <div className="flex items-center gap-3 mb-2">
-                <motion.span
-                  className="w-3 h-3 rounded-full bg-green-500"
-                  animate={{ scale: [1, 1.2, 1] }}
-                  transition={{ duration: 1.5, repeat: Infinity }}
-                />
-                <span className="text-sm font-medium text-green-500">AVAILABLE FOR WORK</span>
-              </div>
-              <p className="text-muted-foreground">
-                Currently accepting new projects. Response time: within 24 hours.
-              </p>
-            </motion.div>
-          </motion.div>
-        </div>
-      </div>
-
-      {/* Footer */}
-      <footer className="max-w-7xl mx-auto px-6 mt-32">
-        <div className="border-t border-border pt-12">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-8">
-            {/* Logo */}
+          {/* RIGHT: HUD Info & Socials */}
+          <div className="space-y-16">
+            
+            {/* Quick Copy Email */}
             <motion.div 
-              className="flex items-center gap-2"
-              whileHover={{ scale: 1.02 }}
+               className="p-8 border border-white/10 rounded-2xl bg-white/5 backdrop-blur-sm cursor-pointer group hover:border-blue-500/50 transition-colors relative overflow-hidden"
+               onClick={copyEmail}
+               whileHover={{ scale: 1.02 }}
             >
-              <span className="text-3xl font-display tracking-wider">CREATIVE</span>
-              <motion.span 
-                className="w-3 h-3 rounded-full bg-primary"
-                animate={{ scale: [1, 1.3, 1] }}
-                transition={{ duration: 2, repeat: Infinity }}
-              />
-              <span className="text-3xl font-display tracking-wider text-outline">DEV</span>
+               <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl" />
+               <div className="relative z-10 flex justify-between items-center">
+                  <div>
+                     <span className="text-xs font-mono text-zinc-500 mb-2 block uppercase tracking-widest">Primary Channel</span>
+                     <h3 className="text-2xl md:text-3xl font-display text-white">385.kartik.p@gmail.com</h3>
+                  </div>
+                  <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center group-hover:bg-blue-500 group-hover:text-white transition-colors">
+                     {copied ? <Check className="w-5 h-5" /> : <Copy className="w-5 h-5" />}
+                  </div>
+               </div>
             </motion.div>
 
-            {/* Copyright */}
-            <p className="text-muted-foreground text-sm">
-              © 2024 Creative Developer. Crafted with passion and precision.
-            </p>
+            {/* Info Grid */}
+            <div className="grid grid-cols-2 gap-8">
+               <div className="space-y-2">
+                  <span className="text-xs font-mono text-zinc-500 flex items-center gap-2">
+                     <MapPin className="w-3 h-3" /> BASE_STATION
+                  </span>
+                  <p className="text-xl text-white font-display">Mira Road, Mumbai</p>
+               </div>
+               <div className="space-y-2">
+                  <span className="text-xs font-mono text-zinc-500 flex items-center gap-2">
+                     <Phone className="w-3 h-3" /> SIGNAL_FREQ
+                  </span>
+                  <p className="text-xl text-white font-display">+91 9619410050</p>
+               </div>
+            </div>
 
-            {/* Back to top */}
-            <MagneticButton 
-              className="w-12 h-12 rounded-full border border-border flex items-center justify-center hover:border-primary transition-colors"
-              onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-            >
-              <ArrowRight className="w-5 h-5 -rotate-90" />
-            </MagneticButton>
+            {/* Social Matrix */}
+            <div className="space-y-6">
+               <h3 className="text-xs font-mono text-zinc-500 uppercase tracking-widest">Global_Network_Access</h3>
+               <div className="grid gap-4">
+                  {socials.map((social) => (
+                     <SocialCard key={social.name} social={social} />
+                  ))}
+               </div>
+            </div>
+
           </div>
         </div>
-      </footer>
+
+        {/* --- SYSTEM FOOTER --- */}
+        <div className="mt-40 border-t border-white/10 pt-12 flex flex-col md:flex-row justify-between items-end gap-8 opacity-50 hover:opacity-100 transition-opacity">
+           <div>
+              <Terminal className="w-8 h-8 text-blue-500 mb-4" />
+              <p className="text-xs font-mono text-zinc-500 max-w-xs">
+                 SECURE CONNECTION ESTABLISHED. ALL RIGHTS RESERVED. <br/>
+                 SYSTEM VERSION 2.5.0
+              </p>
+           </div>
+           
+           <div className="text-right">
+              <h2 className="text-[10vw] leading-[0.8] font-display text-white/5 select-none pointer-events-none">
+                 KARTIK
+              </h2>
+           </div>
+        </div>
+
+      </div>
     </section>
   );
 }

@@ -55,7 +55,7 @@
   }
 
   html {
-    scroll-behavior: smooth;
+    @apply antialiased;
   }
 
   body {
@@ -136,8 +136,7 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  background: hsl(var(--primary) / 0.3);
-  border-radius: 3px;
+  @apply bg-primary rounded-[3px];
 }
 
 ::-webkit-scrollbar-thumb:hover {
