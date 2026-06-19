@@ -4,6 +4,7 @@ import { useRef, useState, useEffect } from 'react';
 import { ArrowLeft, ArrowRight, ExternalLink, Github, ChevronRight, Zap } from 'lucide-react';
 import { projectsData } from '../data/projectsData';
 import SmoothScroll from '../components/SmoothScroll';
+import { SEO } from '../components/SEO';
 
 // ─── PROGRESS BAR ────────────────────────────────────────────────────────────
 function ReadingProgress({ color }: { color: string }) {
@@ -219,15 +220,15 @@ function TechBadge({ tech, color, index }: { tech: string; color: string; index:
 
 // ─── MAIN PAGE ────────────────────────────────────────────────────────────────
 export default function CaseStudyPage() {
-  const { id } = useParams();
+  const { slug } = useParams();
   const navigate = useNavigate();
-  const projectIndex = projectsData.findIndex(p => p.id === id);
+  const projectIndex = projectsData.findIndex(p => p.slug === slug);
   const project = projectsData[projectIndex];
   const prevProject = projectsData[projectIndex - 1];
   const nextProject = projectsData[projectIndex + 1];
 
   // Scroll to top on mount
-  useEffect(() => { window.scrollTo(0, 0); }, [id]);
+  useEffect(() => { window.scrollTo(0, 0); }, [slug]);
 
   if (!project) {
     return (
@@ -248,6 +249,11 @@ export default function CaseStudyPage() {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
     >
+      <SEO 
+        title={`${project.title} - Project by Kartik Parmar`} 
+        description={project.shortDesc} 
+        image={project.images[0]} 
+      />
       <ReadingProgress color={project.color} />
 
       {/* ── NAV BAR ── */}
@@ -261,7 +267,7 @@ export default function CaseStudyPage() {
           BACK
         </Link>
         <div className="relative flex items-center gap-2">
-          <span className="text-xs font-mono text-white/30 hidden sm:block">{project.id} /</span>
+          <span className="text-xs font-mono text-white/30 hidden sm:block">Project /</span>
           <span className="text-sm font-display text-white/80">{project.title}</span>
         </div>
         <div className="relative flex gap-3">
@@ -403,7 +409,7 @@ export default function CaseStudyPage() {
           <div className="flex flex-col sm:flex-row justify-between gap-4">
             {prevProject ? (
               <motion.div whileHover={{ x: -4 }} className="flex-1">
-                <Link to={`/project/${prevProject.id}`} className="group flex flex-col gap-1">
+                <Link to={`/projects/${prevProject.slug}`} className="group flex flex-col gap-1">
                   <span className="text-xs font-mono text-white/30 tracking-wider flex items-center gap-2">
                     <ArrowLeft className="w-3 h-3 group-hover:-translate-x-1 transition-transform" /> PREVIOUS
                   </span>
@@ -415,7 +421,7 @@ export default function CaseStudyPage() {
 
             {nextProject ? (
               <motion.div whileHover={{ x: 4 }} className="flex-1 text-right">
-                <Link to={`/project/${nextProject.id}`} className="group flex flex-col gap-1 items-end">
+                <Link to={`/projects/${nextProject.slug}`} className="group flex flex-col gap-1 items-end">
                   <span className="text-xs font-mono text-white/30 tracking-wider flex items-center gap-2">
                     NEXT <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
                   </span>
@@ -424,6 +430,9 @@ export default function CaseStudyPage() {
                 </Link>
               </motion.div>
             ) : <div className="flex-1" />}
+          </div>
+          <div className="mt-16 text-center text-white/40 text-sm">
+            <p>Built with precision by <Link to="/" className="text-white/70 hover:text-white transition-colors">Kartik Parmar</Link></p>
           </div>
           </div>
         </div>

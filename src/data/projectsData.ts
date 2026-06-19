@@ -12,6 +12,7 @@ export interface ProjectFeature {
 
 export interface Project {
   id: string;
+  slug: string;
   title: string;
   category: string;
   shortDesc: string;
@@ -37,6 +38,7 @@ export interface Project {
 export const projectsData: Project[] = [
   {
     id: '01',
+    slug: 'print-it',
     title: 'PRINT-IT',
     category: 'CAMPUS STARTUP',
     shortDesc: 'Campus printing platform officially adopted by Universal College of Engineering, Mumbai. Reduced student queue wait time by 50%+.',
@@ -83,6 +85,7 @@ export const projectsData: Project[] = [
   },
   {
     id: '02',
+    slug: 'navrang',
     title: 'NAVRANG',
     category: 'D2C E-COMMERCE',
     shortDesc: 'Full-stack D2C eCommerce brand for Navratri collections. Profitable venture with real sales.',
@@ -124,6 +127,7 @@ export const projectsData: Project[] = [
   },
   {
     id: '03',
+    slug: 'wheatflow',
     title: 'WHEATFLOW',
     category: 'B2B DASHBOARD',
     shortDesc: 'High-performance B2B inventory & order management dashboard for Anaj Sathi handling 2.4M+ records with zero UI lag.',
@@ -169,6 +173,7 @@ export const projectsData: Project[] = [
   },
   {
     id: '04',
+    slug: 'waves-wires',
     title: 'WAVES & WIRES (Testing Phase)',
     category: 'E-COMMERCE PLATFORM',
     shortDesc: 'Directly approached by Waves & Wires Technologies LLP to architect their complete e-commerce platform from scratch — production-grade, atomic, and secured.',
@@ -220,6 +225,7 @@ export const projectsData: Project[] = [
   },
   {
     id: '05',
+    slug: 'gopal-stationery',
     title: 'GOPAL STATIONERY (Testing Phase)',
     category: 'E-COMMERCE PLATFORM',
     shortDesc: 'Complete e-commerce platform for Gopal Stationery — built from scratch with full admin dashboard.',
@@ -264,6 +270,7 @@ export const projectsData: Project[] = [
   },
   {
     id: '06',
+    slug: 'college-predictor',
     title: 'COLLEGE PREDICTOR',
     category: 'COMPANY PROJECT',
     shortDesc: 'Score-to-college mapping tool that guided 50%+ of Mira Road students through engineering admissions. Built for Get Analyticx.',
@@ -405,6 +412,7 @@ export const projectsData: Project[] = [
   // },
   {
     id: '07',
+    slug: 'vibetix',
     title: 'VIBETIX',
     category: 'HACKATHON WINNER',
     shortDesc: 'Event ticketing platform with dynamic pricing and QR-based check-ins. Won Hackathonix (Get Analyticx) — cut ticket processing time by 30%.',
@@ -448,4 +456,56 @@ export const projectsData: Project[] = [
     outcome: 'Won Hackathonix organized by Get Analyticx. The full working system — dynamic pricing, QR entry, split payments — was delivered entirely within hackathon hours. Judges recognized the 30% faster processing metric as a concrete, measurable win.',
     githubUrl: 'https://github.com/385Kartik/VibeTix.git',
   },
+  {
+    id: '08',
+    slug: 'uni-brain',
+    title: 'UNI-BRAIN',
+    category: 'AI APPLICATION',
+    shortDesc: 'Placeholder description for Uni-Brain. Update needed.',
+    fullDesc: 'Placeholder full description for Uni-Brain. Provide details later.',
+    tech: 'REACT.JS / NODE.JS / AI',
+    techStack: ['React.js', 'Node.js', 'AI Integration'],
+    image: '/placeholder.png',
+    images: ['/placeholder.png'],
+    year: '2026',
+    color: '#3b82f6',
+    role: 'Full Stack Developer',
+    duration: '2026',
+    type: 'Product',
+    stats: [
+      { label: 'Status', value: 'In Progress' },
+    ],
+    problem: 'Placeholder problem.',
+    solution: 'Placeholder solution.',
+    features: [
+      { title: 'Feature 1', description: 'Placeholder feature description.' },
+    ],
+    outcome: 'Placeholder outcome.',
+  },
+  {
+    id: '09',
+    slug: 'numberwale-ai-automation',
+    title: 'NUMBERWALE AI AUTOMATION',
+    category: 'AI SYSTEMS',
+    shortDesc: 'Placeholder description for Numberwale AI Automation. Update needed.',
+    fullDesc: 'Placeholder full description for Numberwale AI Automation. Provide details later.',
+    tech: 'PYTHON / AI / AUTOMATION',
+    techStack: ['Python', 'AI', 'Workflow Automation'],
+    image: '/placeholder.png',
+    images: ['/placeholder.png'],
+    year: '2026',
+    color: '#8b5cf6',
+    role: 'Full Stack Developer',
+    duration: 'Present',
+    type: 'Company Project',
+    stats: [
+      { label: 'Impact', value: 'Automation' },
+    ],
+    problem: 'Placeholder problem.',
+    solution: 'Placeholder solution.',
+    features: [
+      { title: 'Feature 1', description: 'Placeholder feature description.' },
+    ],
+    outcome: 'Placeholder outcome.',
+  }
 ];

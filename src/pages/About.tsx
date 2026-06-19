@@ -3,12 +3,13 @@ import AboutSection from "../components/AboutSection"; // <--- Importing your "D
 import ContactSection from "../components/ContactSection"; // Optional: Adds the footer/contact area
 import FooterSection from '@/components/FooterSection';
 import SmoothScroll from '../components/SmoothScroll';
+import { SEO } from "../components/SEO";
 
 export default function About() {
   return (
     <SmoothScroll>
     <div className="bg-[#020202] min-h-screen text-white selection:bg-blue-500/30">
-      
+      <SEO title="About Kartik Parmar | Full Stack Developer" />
       {/* 1. Navigation */}
       <Navbar />
 

@@ -108,7 +108,7 @@ function ProfileCard() {
           <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
           <span className="text-[10px] font-mono text-green-400 tracking-[0.2em]">AVAILABLE FOR WORK</span>
         </div>
-        <h3 className="text-3xl font-display text-white mb-1">KARTIK PARMAR</h3>
+        <h1 className="text-3xl font-display text-white mb-1">KARTIK PARMAR</h1>
         <p className="text-xs font-bold tracking-[0.15em] uppercase text-blue-400">Full-Stack Developer • Entrepreneur</p>
       </div>
 
@@ -274,6 +274,16 @@ export default function AboutSection() {
                 <Briefcase className="w-4 h-4" /> Career_Highlights
               </h3>
               <div className="space-y-5">
+                <div className="flex gap-4">
+                  <div className="w-px bg-gradient-to-b from-indigo-500 to-transparent flex-shrink-0" />
+                  <div>
+                    <div className="flex items-center gap-3 mb-1">
+                      <h4 className="text-white font-display text-lg">Full Stack Developer — Numberwale</h4>
+                      <span className="text-[10px] font-mono text-zinc-600">Present</span>
+                    </div>
+                    <p className="text-zinc-400 text-sm">Building AI automation systems and agentic workflows to streamline business operations.</p>
+                  </div>
+                </div>
                 <div className="flex gap-4">
                   <div className="w-px bg-gradient-to-b from-blue-500 to-transparent flex-shrink-0" />
                   <div>

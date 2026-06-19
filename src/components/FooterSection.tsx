@@ -167,7 +167,7 @@ export default function FooterSection() {
         {/* --- BOTTOM STATUS BAR --- */}
         <div className="border-t border-white/10 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 font-mono text-xs text-zinc-500">
            <div className="flex items-center gap-4">
-              <span>© 2025 KARTIK.SYS</span>
+              <span>© 2026 Kartik Parmar</span>
               <span className="h-3 w-px bg-white/10" />
               <span>LATENCY: 12ms</span>
            </div>
