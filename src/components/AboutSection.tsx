@@ -74,7 +74,7 @@ function ProfileCard() {
       <div className="relative aspect-[3/4] overflow-hidden rounded-3xl">
         <img 
           src="/Kartik.jpeg" 
-          alt="Kartik Parmar" 
+          alt="Kartik Parmar Full Stack Developer" 
           className="w-full h-full object-cover object-top grayscale-[30%] group-hover:grayscale-0 transition-all duration-700 scale-105 group-hover:scale-100"
         />
         {/* Gradient overlay */}

@@ -1,13 +1,17 @@
 import { motion, useMotionTemplate, useMotionValue } from 'framer-motion';
-import { ArrowUp, Cpu, Database, Globe, Layers, Power, ShieldCheck } from 'lucide-react';
+import { ArrowUp, Cpu, Database, Globe, Layers, Power, ShieldCheck, FileText } from 'lucide-react';
 import { MouseEvent } from 'react';
 import MagneticButton from './MagneticButton';
 import InteractiveText from './InteractiveText';
 import { Link } from 'react-router-dom';
 
+import { BookOpen } from 'lucide-react';
+
 const systemLinks = [
   { name: 'Skills', href: '/#services', icon: Cpu },
   { name: 'Project Archives', href: '/#projects', icon: Database },
+  { name: 'Research Paper', href: '/research-paper', icon: FileText },
+  { name: 'Engineering Log', href: '/blog', icon: BookOpen },
   { name: 'Neural Profile', href: '/about', icon: Layers },
   { name: 'Uplink Channel', href: '/#contact', icon: Globe },
 ];

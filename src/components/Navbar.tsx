@@ -7,6 +7,8 @@ import MagneticButton from './MagneticButton';
 const navItems = [
   { name: 'SKILLS', href: '/#services' },
   { name: 'PROJECTS', href: '/#projects' },
+  { name: 'RESEARCH', href: '/research-paper' },
+  { name: 'BLOG', href: '/blog' },
   { name: 'ABOUT', href: '/about' },
   { name: 'CONTACT', href: '/#contact' },
 ];
@@ -91,7 +93,7 @@ export default function Navbar() {
         transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
         className="fixed top-6 left-0 right-0 z-50 flex justify-center px-4 pointer-events-none"
       >
-        <div className="w-full max-w-5xl pointer-events-auto">
+        <div className="w-full max-w-6xl pointer-events-auto">
           <div className={`relative flex items-center justify-between px-6 py-3.5 rounded-full shadow-2xl overflow-hidden transition-all duration-500 ${
             scrolled 
               ? 'bg-[#0a0a0a]/90 backdrop-blur-2xl border border-white/[0.08] shadow-[0_8px_32px_rgba(0,0,0,0.4)]' 

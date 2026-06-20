@@ -3,6 +3,7 @@ import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion'
 import { useRef, useState, useEffect } from 'react';
 import { ArrowLeft, ArrowRight, ExternalLink, Github, ChevronRight, Zap } from 'lucide-react';
 import { projectsData } from '../data/projectsData';
+import { SEO } from '../components/SEO';
 
 // ─── PROGRESS BAR ────────────────────────────────────────────────────────────
 function ReadingProgress({ color }: { color: string }) {
@@ -225,6 +226,11 @@ export default function CaseStudyPage() {
 
   return (
     <div className="min-h-screen bg-[#030303] text-white">
+      <SEO 
+        title={`${project.title} | Case Study`}
+        description={project.shortDesc}
+        image={project.images[0]}
+      />
       <ReadingProgress color={project.color} />
 
       {/* ── NAV BAR ── */}

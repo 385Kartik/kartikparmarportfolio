@@ -12,6 +12,7 @@ import SmoothScroll from '@/components/SmoothScroll';
 import { useEffect, useState, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { SEO } from '@/components/SEO';
 
 const Index = () => {
   const location = useLocation();
@@ -56,6 +57,7 @@ const Index = () => {
   return (
     <SmoothScroll>
       <div className="relative min-h-screen cursor-none bg-transparent text-white selection:bg-blue-500/30">
+        <SEO title="Kartik Parmar | Full Stack Developer & AI Applications Builder" />
         <LoadingScreen />
         
         {/* 1. SCENE FIXED HAI (Hamesha piche rahega) */}

@@ -36,6 +36,31 @@ export function SEO({
       <meta name="twitter:title" content={title} />
       <meta name="twitter:description" content={description} />
       {image && <meta name="twitter:image" content={image} />}
+
+      {/* JSON-LD Person Schema */}
+      <script type="application/ld+json">
+        {JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "Person",
+          "name": "Kartik Parmar",
+          "url": "https://kartikparmarportfolio.vercel.app/",
+          "image": "https://kartikparmarportfolio.vercel.app/Kartik.jpeg",
+          "jobTitle": "Full Stack Developer",
+          "worksFor": {
+            "@type": "Organization",
+            "name": "Numberwale"
+          },
+          "alumniOf": {
+            "@type": "Organization",
+            "name": "Universal College of Engineering"
+          },
+          "sameAs": [
+            "https://www.linkedin.com/in/kartik-parmar-963544256",
+            "https://github.com/Kartik-Parmar",
+            "https://x.com/kartikparmar"
+          ]
+        })}
+      </script>
     </Helmet>
   );
 }
