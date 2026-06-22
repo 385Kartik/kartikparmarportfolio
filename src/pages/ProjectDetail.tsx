@@ -432,7 +432,14 @@ export default function CaseStudyPage() {
             ) : <div className="flex-1" />}
           </div>
           <div className="mt-16 text-center text-white/40 text-sm">
-            <p>Built with precision by <Link to="/" className="text-white/70 hover:text-white transition-colors">Kartik Parmar</Link></p>
+            <p>
+              {project.role.toLowerCase().includes('founder') 
+                ? 'Founded and engineered by ' 
+                : project.role.toLowerCase().includes('design') 
+                ? 'Designed and developed by '
+                : 'Built by '}
+              <Link to="/kartik-parmar" className="text-white/70 hover:text-white transition-colors font-semibold">Kartik Parmar</Link>
+            </p>
           </div>
           </div>
         </div>

@@ -15,6 +15,7 @@ const BlogList = lazy(() => import("./pages/BlogList"));
 const BlogDetail = lazy(() => import("./pages/BlogDetail"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const ResearchPaperPage = lazy(() => import("./pages/ResearchPaperPage"));
+const KartikParmarPage = lazy(() => import("./pages/KartikParmarPage"));
 
 const queryClient = new QueryClient();
 
@@ -45,6 +46,7 @@ const App = () => (
               <Route path="/blog/:slug" element={<BlogDetail />} />
               
               <Route path="/research-paper" element={<ResearchPaperPage />} />
+              <Route path="/kartik-parmar" element={<KartikParmarPage />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Suspense>

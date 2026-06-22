@@ -236,7 +236,7 @@ export default function AboutSection() {
               <h2 className="text-6xl md:text-8xl font-display leading-[0.85] mb-8 text-white">
                 ABOUT
                 <br />
-                <InteractiveText text="ME" className="text-blue-500" />
+                <InteractiveText text="KARTIK PARMAR" className="text-blue-500 text-4xl md:text-6xl lg:text-7xl whitespace-nowrap" />
               </h2>
             </motion.div>
 
@@ -248,14 +248,12 @@ export default function AboutSection() {
               className="mb-16 space-y-6"
             >
               <p className="text-lg text-zinc-300 leading-relaxed border-l-2 border-blue-500/30 pl-6">
-                Full-stack web developer and entrepreneur with <span className="text-white font-semibold">1+ year of production experience</span>, 
-                <span className="text-blue-400 font-semibold"> 3 ventures founded</span>, and 
-                <span className="text-purple-400 font-semibold"> 2× hackathon wins</span>.
+                Kartik Parmar is a Full Stack Developer and AI Engineer based in Mumbai, India, with <span className="text-white font-semibold">1+ year of production experience</span>. 
+                Kartik Parmar has <span className="text-blue-400 font-semibold">founded 3 ventures</span> and secured <span className="text-purple-400 font-semibold">2× hackathon wins</span>.
               </p>
               <p className="text-zinc-400 leading-relaxed pl-6">
-                Built platforms handling <span className="text-white">2.4M+ records</span>, reduced print queues by 50%, and earned official 
-                institutional adoption. Proficient in React.js, TypeScript, Node.js, Django, Supabase, AWS, and Razorpay — 
-                with a consistent track record of shipping real-world systems used by real users.
+                As an engineer, Kartik Parmar built platforms handling <span className="text-white">2.4M+ records</span>, reduced print queues by 50%, and earned official institutional adoption. 
+                Kartik Parmar specializes in React.js, TypeScript, Node.js, Django, Supabase, AWS, and Razorpay — bringing a consistent track record of shipping robust, scalable systems.
               </p>
             </motion.div>
           </div>
@@ -281,7 +279,7 @@ export default function AboutSection() {
                       <h4 className="text-white font-display text-lg">Full Stack Developer — Numberwale</h4>
                       <span className="text-[10px] font-mono text-zinc-600">Present</span>
                     </div>
-                    <p className="text-zinc-400 text-sm">Building AI automation systems and agentic workflows to streamline business operations.</p>
+                    <p className="text-zinc-400 text-sm">Kartik Parmar builds AI automation systems and agentic workflows to streamline business operations.</p>
                   </div>
                 </div>
                 <div className="flex gap-4">
@@ -291,7 +289,7 @@ export default function AboutSection() {
                       <h4 className="text-white font-display text-lg">Web Dev Intern — Get Analyticx</h4>
                       <span className="text-[10px] font-mono text-zinc-600">2025 – Present</span>
                     </div>
-                    <p className="text-zinc-400 text-sm">Built Task-Based Learning Platform & College Predictor Tool used by 50%+ Mira Road students.</p>
+                    <p className="text-zinc-400 text-sm">Kartik Parmar engineered a Task-Based Learning Platform & College Predictor Tool used by 50%+ Mira Road students.</p>
                   </div>
                 </div>
                 <div className="flex gap-4">
@@ -301,7 +299,7 @@ export default function AboutSection() {
                       <h4 className="text-white font-display text-lg">Freelance Dev — Waves & Wires</h4>
                       <span className="text-[10px] font-mono text-zinc-600">2026</span>
                     </div>
-                    <p className="text-zinc-400 text-sm">Architected complete e-commerce platform with Razorpay, atomic RPC, admin dashboard.</p>
+                    <p className="text-zinc-400 text-sm">Kartik Parmar architected a complete e-commerce platform with Razorpay, atomic RPC, and a custom admin dashboard.</p>
                   </div>
                 </div>
                 <div className="flex gap-4">
@@ -311,7 +309,7 @@ export default function AboutSection() {
                       <h4 className="text-white font-display text-lg">Founder — KARTIK, Print-It, NavRang</h4>
                       <span className="text-[10px] font-mono text-zinc-600">2025 – Present</span>
                     </div>
-                    <p className="text-zinc-400 text-sm">Founded 3 ventures. Print-It officially adopted by Universal College of Engineering.</p>
+                    <p className="text-zinc-400 text-sm">Kartik Parmar founded 3 ventures. Print-It was officially adopted by Universal College of Engineering.</p>
                   </div>
                 </div>
               </div>
@@ -367,7 +365,7 @@ export default function AboutSection() {
               viewport={{ once: true }}
               className="mb-8"
             >
-              <h3 className="text-xs font-bold tracking-[0.3em] uppercase text-zinc-500 mb-8">My_Approach</h3>
+              <h3 className="text-xs font-bold tracking-[0.3em] uppercase text-zinc-500 mb-8">Kartik_Parmar_Approach</h3>
             </motion.div>
 
             {/* Neural Pathway Container */}

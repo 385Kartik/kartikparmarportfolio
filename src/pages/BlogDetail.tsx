@@ -78,9 +78,18 @@ export default function BlogDetail() {
               </div>
 
               {/* TITLE */}
-              <h1 className="text-4xl md:text-6xl lg:text-7xl font-display leading-[1.1] mb-8 text-white tracking-tight">
+              <h1 className="text-4xl md:text-6xl lg:text-7xl font-display leading-[1.1] mb-6 text-white tracking-tight">
                 {post.title}
               </h1>
+
+              {/* AUTHOR HEADER */}
+              <div className="flex items-center gap-3 mb-8">
+                <img src="/Kartik.jpeg" alt="Kartik Parmar" className="w-10 h-10 rounded-full object-cover border border-white/20 grayscale" />
+                <div>
+                  <p className="text-sm font-semibold text-white">Kartik Parmar</p>
+                  <p className="text-[10px] font-mono text-zinc-400 tracking-widest uppercase">Author & AI Engineer</p>
+                </div>
+              </div>
 
               {/* TAGS */}
               <div className="flex flex-wrap gap-2">
