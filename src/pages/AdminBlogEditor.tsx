@@ -93,6 +93,8 @@ export default function AdminBlogEditor() {
     const words = (formData.content || '').replace(/<[^>]*>?/gm, '').split(/\s+/).length;
     const calcReadingTime = Math.max(1, Math.ceil(words / 200));
 
+    const tagsArray = tagsInput.split(',').map(t => t.trim()).filter(Boolean);
+
     const payload = {
       ...formData,
       tags: tagsArray,
