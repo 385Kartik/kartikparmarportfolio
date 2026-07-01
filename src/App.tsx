@@ -16,6 +16,9 @@ const BlogDetail = lazy(() => import("./pages/BlogDetail"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const ResearchPaperPage = lazy(() => import("./pages/ResearchPaperPage"));
 const KartikParmarPage = lazy(() => import("./pages/KartikParmarPage"));
+const AdminAuth = lazy(() => import("./pages/AdminAuth"));
+const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
+const AdminBlogEditor = lazy(() => import("./pages/AdminBlogEditor"));
 
 const queryClient = new QueryClient();
 
@@ -47,6 +50,12 @@ const App = () => (
               
               <Route path="/research-paper" element={<ResearchPaperPage />} />
               <Route path="/kartik-parmar" element={<KartikParmarPage />} />
+              
+              {/* ADMIN ROUTES */}
+              <Route path="/kartik-admin" element={<AdminAuth />} />
+              <Route path="/kartik-admin/dashboard" element={<AdminDashboard />} />
+              <Route path="/kartik-admin/edit/:slug" element={<AdminBlogEditor />} />
+
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Suspense>

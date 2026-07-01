@@ -1,12 +1,12 @@
 import { useParams, Link } from 'react-router-dom';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { useRef, useEffect } from 'react';
-import { ArrowLeft, Share2, Calendar, Clock, Tag } from 'lucide-react';
+import { ArrowLeft, Share2, Calendar, Clock, Tag, Loader2, Edit3 } from 'lucide-react';
 import { SEO } from '../components/SEO';
 import Navbar from '../components/Navbar';
 import FooterSection from '../components/FooterSection';
 import SmoothScroll from '../components/SmoothScroll';
-import { blogData } from '../data/blogData';
+import { supabase, BlogPost } from '../lib/supabase';
 
 // Reading progress bar
 function ReadingProgress() {
@@ -21,13 +21,38 @@ function ReadingProgress() {
 
 export default function BlogDetail() {
   const { slug } = useParams();
-  const post = blogData.find(p => p.slug === slug);
+  const [post, setPost] = useState<BlogPost | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
+
   const heroRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ target: heroRef, offset: ['start start', 'end start'] });
   const y = useTransform(scrollYProgress, [0, 1], ['0%', '30%']);
   const opacity = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
 
-  useEffect(() => { window.scrollTo(0, 0); }, [slug]);
+  useEffect(() => { 
+    window.scrollTo(0, 0); 
+    fetchPostAndCheckAuth();
+  }, [slug]);
+
+  const fetchPostAndCheckAuth = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    setIsAdmin(!!session);
+
+    if (slug) {
+      const { data } = await supabase.from('blogs').select('*').eq('slug', slug).single();
+      setPost(data);
+    }
+    setLoading(false);
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#020202] text-white flex items-center justify-center">
+        <Loader2 className="w-8 h-8 text-purple-500 animate-spin" />
+      </div>
+    );
+  }
 
   if (!post) {
     return (
@@ -40,13 +65,49 @@ export default function BlogDetail() {
     );
   }
 
+  const articleSchema = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": post.title,
+    "image": [post.image_url],
+    "datePublished": post.created_at,
+    "dateModified": post.updated_at,
+    "author": {
+      "@type": "Person",
+      "name": "Kartik Parmar",
+      "url": "https://kartikparmarportfolio.vercel.app/kartik-parmar"
+    }
+  };
+
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [{
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "https://kartikparmarportfolio.vercel.app/"
+    },{
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Blog",
+      "item": "https://kartikparmarportfolio.vercel.app/blog"
+    },{
+      "@type": "ListItem",
+      "position": 3,
+      "name": post.title,
+      "item": `https://kartikparmarportfolio.vercel.app/blog/${post.slug}`
+    }]
+  };
+
   return (
     <SmoothScroll>
       <div className="min-h-screen bg-[#020202] text-white selection:bg-purple-500/30">
         <SEO 
           title={`${post.title} | Kartik Parmar`}
           description={post.excerpt}
-          image={post.image}
+          image={post.image_url}
+          schemas={[articleSchema, breadcrumbSchema]}
         />
         <ReadingProgress />
         <Navbar />
@@ -54,22 +115,30 @@ export default function BlogDetail() {
         {/* HERO SECTION WITH PARALLAX */}
         <div ref={heroRef} className="relative h-[70vh] md:h-[85vh] flex flex-col justify-end overflow-hidden">
           <motion.div className="absolute inset-0" style={{ y }}>
-            <img src={post.image} alt={post.title} className="w-full h-full object-cover" />
+            <img src={post.image_url} alt={post.image_alt || post.title} className="w-full h-full object-cover" />
             <div className="absolute inset-0 bg-gradient-to-t from-[#020202] via-[#020202]/80 to-transparent" />
             <div className="absolute inset-0 bg-purple-500/10 mix-blend-overlay" />
           </motion.div>
 
           <motion.div style={{ opacity }} className="relative z-10 w-full max-w-4xl mx-auto px-6 pb-16 md:pb-24">
-            <Link to="/blog" className="inline-flex items-center gap-2 text-zinc-400 hover:text-white mb-8 text-xs font-mono tracking-widest uppercase transition-colors group">
-              <ArrowLeft className="w-3 h-3 group-hover:-translate-x-1 transition-transform" /> Back to Journal
-            </Link>
+            <div className="flex items-center justify-between mb-8">
+              <Link to="/blog" className="inline-flex items-center gap-2 text-zinc-400 hover:text-white text-xs font-mono tracking-widest uppercase transition-colors group">
+                <ArrowLeft className="w-3 h-3 group-hover:-translate-x-1 transition-transform" /> Back to Journal
+              </Link>
+              
+              {isAdmin && (
+                <Link to={`/kartik-admin/edit/${post.slug}`} className="inline-flex items-center gap-2 px-3 py-1.5 bg-purple-500/10 border border-purple-500/30 text-purple-400 rounded hover:bg-purple-500/20 transition-colors text-xs font-mono tracking-widest uppercase">
+                  <Edit3 className="w-3 h-3" /> Edit Blog
+                </Link>
+              )}
+            </div>
 
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}>
               {/* META ROW */}
               <div className="flex flex-wrap items-center gap-4 md:gap-6 mb-6 text-xs font-mono text-zinc-400 tracking-wider">
                 <div className="flex items-center gap-2">
                   <Calendar className="w-3.5 h-3.5 text-purple-400" />
-                  {new Date(post.date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                  {new Date(post.created_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
                 </div>
                 <div className="flex items-center gap-2">
                   <Clock className="w-3.5 h-3.5 text-blue-400" />
@@ -83,11 +152,11 @@ export default function BlogDetail() {
               </h1>
 
               {/* AUTHOR HEADER */}
-              <div className="flex items-center gap-3 mb-8">
-                <img src="/Kartik.jpeg" alt="Kartik Parmar" className="w-10 h-10 rounded-full object-cover border border-white/20 grayscale" />
+              <div className="flex items-center gap-3 mb-8 bg-white/5 border border-white/10 p-4 rounded-2xl w-fit backdrop-blur-md">
+                <img src="/Kartik.jpeg" alt="Kartik Parmar" className="w-12 h-12 rounded-full object-cover border border-white/20 grayscale" />
                 <div>
-                  <p className="text-sm font-semibold text-white">Kartik Parmar</p>
-                  <p className="text-[10px] font-mono text-zinc-400 tracking-widest uppercase">Author & AI Engineer</p>
+                  <p className="text-sm font-semibold text-white">Written by Kartik Parmar</p>
+                  <p className="text-[10px] font-mono text-zinc-400 tracking-widest uppercase">Full Stack Developer & AI Engineer</p>
                 </div>
               </div>
 
@@ -137,19 +206,27 @@ export default function BlogDetail() {
             )}
           </motion.article>
 
-          {/* SHARE FOOTER */}
-          <div className="mt-24 pt-8 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-6">
-            <div className="flex items-center gap-4">
-              <img src="/Kartik.jpeg" alt="Kartik Parmar" className="w-12 h-12 rounded-full object-cover grayscale border border-white/20" />
-              <div>
-                <p className="font-display text-white text-lg leading-none mb-1">Kartik Parmar</p>
-                <p className="font-mono text-[10px] uppercase tracking-widest text-zinc-500">Author & Engineer</p>
+          {/* ABOUT THE AUTHOR REUSABLE CARD */}
+          <div className="mt-24 pt-12 border-t border-white/10">
+            <div className="bg-[#0a0a0a] border border-white/10 rounded-3xl p-8 md:p-12 flex flex-col md:flex-row items-center md:items-start gap-8 relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-64 h-64 bg-purple-500/10 blur-[80px] rounded-full pointer-events-none" />
+              <img src="/Kartik.jpeg" alt="Kartik Parmar" className="w-24 h-24 md:w-32 md:h-32 rounded-full object-cover grayscale hover:grayscale-0 transition-all duration-500 border-2 border-purple-500/30 relative z-10" />
+              <div className="text-center md:text-left relative z-10">
+                <h3 className="text-xs font-mono tracking-widest uppercase text-purple-400 mb-2">About the Author</h3>
+                <h2 className="text-3xl font-display font-bold text-white mb-4">Kartik Parmar</h2>
+                <p className="text-zinc-400 text-sm leading-relaxed mb-6 max-w-2xl">
+                  Kartik Parmar is an innovative Full Stack Developer and AI Engineer based in Mumbai. He specializes in architecting comprehensive SaaS solutions, direct-to-consumer e-commerce platforms, and advanced AI automation systems. 
+                </p>
+                <div className="flex flex-col sm:flex-row items-center gap-4 justify-center md:justify-start">
+                  <Link to="/kartik-parmar" className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-white text-black font-semibold hover:bg-zinc-200 transition-colors text-sm">
+                    View Full Profile <ArrowLeft className="w-4 h-4 rotate-180" />
+                  </Link>
+                  <button className="flex items-center gap-2 px-6 py-2.5 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 hover:border-purple-500/50 transition-all text-sm font-semibold text-white">
+                    <Share2 className="w-4 h-4" /> Share Article
+                  </button>
+                </div>
               </div>
             </div>
-            
-            <button className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 hover:border-purple-500/50 transition-all font-mono text-xs tracking-widest uppercase text-zinc-300">
-              <Share2 className="w-3.5 h-3.5" /> Share Article
-            </button>
           </div>
         </main>
 

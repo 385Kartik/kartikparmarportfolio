@@ -7,6 +7,7 @@ interface SEOProps {
   type?: string;
   url?: string;
   image?: string;
+  schemas?: Record<string, any>[];
 }
 
 export function SEO({
@@ -15,7 +16,8 @@ export function SEO({
   name = "Kartik Parmar Portfolio",
   type = "website",
   url = "https://kartikparmarportfolio.vercel.app/",
-  image = "https://kartikparmarportfolio.vercel.app/og-image.jpg" // Placeholder for an actual OG image
+  image = "https://kartikparmarportfolio.vercel.app/og-image.jpg",
+  schemas
 }: SEOProps) {
   return (
     <Helmet>
@@ -61,6 +63,13 @@ export function SEO({
           ]
         })}
       </script>
+
+      {/* Dynamic Schemas */}
+      {schemas && schemas.map((schema, index) => (
+        <script key={index} type="application/ld+json">
+          {JSON.stringify(schema)}
+        </script>
+      ))}
     </Helmet>
   );
 }

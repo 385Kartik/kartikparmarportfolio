@@ -6,10 +6,28 @@ import { SEO } from '../components/SEO';
 import Navbar from '../components/Navbar';
 import FooterSection from '../components/FooterSection';
 import SmoothScroll from '../components/SmoothScroll';
-import { blogData } from '../data/blogData';
+import { supabase, BlogPost } from '../lib/supabase';
+import { Loader2 } from 'lucide-react';
 
 export default function BlogList() {
-  useEffect(() => { window.scrollTo(0, 0); }, []);
+  const [blogs, setBlogs] = useState<BlogPost[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => { 
+    window.scrollTo(0, 0); 
+    fetchBlogs();
+  }, []);
+
+  const fetchBlogs = async () => {
+    const { data, error } = await supabase
+      .from('blogs')
+      .select('*')
+      .eq('is_published', true)
+      .order('created_at', { ascending: false });
+    
+    if (data) setBlogs(data);
+    setLoading(false);
+  };
   const heroRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ target: heroRef, offset: ['start start', 'end start'] });
   const heroOpacity = useTransform(scrollYProgress, [0, 0.6], [1, 0]);
@@ -68,8 +86,13 @@ export default function BlogList() {
         {/* BLOG GRID */}
         <div className="bg-[#020202] rounded-t-[3rem] -mt-12 relative z-20 shadow-[0_-40px_80px_rgba(0,0,0,0.8)]" style={{ overflow: 'clip' }}>
           <main className="max-w-5xl mx-auto px-6 py-20">
+            {loading ? (
+              <div className="flex justify-center py-20">
+                <Loader2 className="w-8 h-8 text-purple-500 animate-spin" />
+              </div>
+            ) : (
             <div className="grid gap-8 md:grid-cols-2">
-              {blogData.map((post, i) => (
+              {blogs.map((post, i) => (
                 <motion.article 
                   key={post.id}
                   initial={{ opacity: 0, y: 30 }}
@@ -85,8 +108,8 @@ export default function BlogList() {
                     
                     <div className="aspect-[16/10] overflow-hidden relative border-b border-white/5">
                       <img 
-                        src={post.image} 
-                        alt={post.title} 
+                        src={post.image_url} 
+                        alt={post.image_alt || post.title} 
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                       />
                       <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-colors duration-500" />
@@ -96,7 +119,7 @@ export default function BlogList() {
                       <div className="flex gap-2 mb-4 text-xs text-zinc-500 font-mono uppercase tracking-widest">
                         <span className="flex items-center gap-2">
                            <span className="w-1.5 h-1.5 rounded-full bg-purple-500" />
-                           {new Date(post.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                           {new Date(post.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                         </span>
                       </div>
                       
@@ -124,6 +147,7 @@ export default function BlogList() {
                 </motion.article>
               ))}
             </div>
+            )}
           </main>
         </div>
 
